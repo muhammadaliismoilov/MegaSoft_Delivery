@@ -15,7 +15,7 @@ export class WorkDaysEntity {
   @Column()
   restaurantId:string;
 
-  @Column({ enum: WeekDays })
+  @Column({type: 'enum', enum: WeekDays })
   dayOfWeek: WeekDays;
 
   @Column({ name: 'open_time', nullable: true })
