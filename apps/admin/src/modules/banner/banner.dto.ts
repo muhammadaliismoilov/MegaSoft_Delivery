@@ -5,6 +5,7 @@ import {
   IsInt,
   IsOptional,
   IsString,
+  IsUUID,
   Min,
 } from 'class-validator';
 import { ApiProperty, ApiPropertyOptional } from '@nestjs/swagger';
@@ -19,6 +20,16 @@ export class BannerResponseDto {
 
   @Expose({ name: 'is_active', toPlainOnly: true })
   isActive: boolean = true;
+
+    
+  @Expose({ name: 'restaurant_id', toPlainOnly: true })
+  @IsUUID()
+  restaurantId: string;
+
+  
+  @Expose({ name: 'food_id', toPlainOnly: true })
+  @IsUUID()
+  foodId: string;
 
   sequence: number;
   @Expose({ name: 'start_date', toPlainOnly: true })
@@ -43,6 +54,16 @@ export class BannerCreateDTO {
   @Expose({ name: 'title', toPlainOnly: true })
   @IsString()
   title: string;
+  
+  @ApiProperty({ type: String })
+  @Expose({ name: 'restaurant_id', toPlainOnly: true })
+  @IsUUID()
+  restaurantId: string;
+
+  @ApiProperty({ type: String })
+  @Expose({ name: 'food_id', toPlainOnly: true })
+  @IsUUID()
+  foodId: string;
 
   @ApiProperty({
     default: true,
@@ -81,6 +102,18 @@ export class BannerUpdateDTO {
   @IsOptional()
   @Transform(({ value }): string | null => (value === '' ? null : value))
   title?: string;
+
+    @ApiProperty({ type: String })
+  @Expose({ name: 'restaurant_id', toPlainOnly: true })
+  @IsUUID()
+   @IsOptional()
+  restaurantId?: string;
+
+  @ApiProperty({ type: String })
+  @Expose({ name: 'food_id', toPlainOnly: true })
+  @IsUUID()
+  @IsOptional()
+  foodId?: string;
 
   @IsBoolean()
   @IsOptional()

@@ -54,11 +54,11 @@ export class ProductResponseDto {
   name: string;
 
   @ApiProperty()
-  @IsString()
+  @IsUUID()
   restaurantId: string;
 
   @ApiProperty()
-  @IsString()
+  @IsUUID()
   foodId: string;
 
   @ApiProperty()
@@ -66,9 +66,13 @@ export class ProductResponseDto {
   isAvailable: boolean;
 
   @ApiProperty()
+  @IsString()
+  description: string;
+
+
+  @ApiProperty()
   @IsDate()
   newUntil: Date;
-
 
   @ApiPropertyOptional()
   @IsString()
@@ -91,6 +95,22 @@ export class ProductCreateDto {
   @IsString()
   @IsOptional()
   image?: string;
+
+  @ApiProperty()
+  @IsUUID()
+  restaurantId: string;
+
+  @ApiProperty()
+  @IsUUID()
+  foodId: string;
+
+  @ApiProperty()
+  @IsBoolean()
+  isAvailable: boolean;
+
+  @ApiProperty()
+  @IsDate()
+  newUntil: Date;
 
   @ApiProperty({ type: Number })
   @IsInt()
@@ -133,6 +153,31 @@ export class ProductUpdateDto {
   @Min(0)
   @IsOptional()
   price?: number;
+
+  @ApiProperty()
+  @IsString()
+  description: string;
+
+
+  @ApiProperty()
+  @IsUUID()
+  @IsOptional()
+  restaurantId?: string;
+
+  @ApiProperty()
+  @IsUUID()
+  @IsOptional()
+  foodId?: string;
+
+  @ApiProperty()
+  @IsBoolean()
+  @IsOptional()
+  isAvailable?: boolean;
+
+  @ApiProperty()
+  @IsDate()
+  @IsOptional()
+  newUntil?: Date;
 
   @ApiPropertyOptional({ enum: DiscountEnum })
   @IsOptional()
