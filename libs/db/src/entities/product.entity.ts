@@ -17,6 +17,18 @@ export class ProductEntity {
   @Column()
   name: string;
 
+  @Column()
+  restaurantId:string;
+
+  @Column()
+  foodId:string;
+
+  @Column()
+  isAvailable: boolean;
+
+  @Column()
+  newUntil: Date;
+
   @Column({ nullable: true })
   image: string;
 

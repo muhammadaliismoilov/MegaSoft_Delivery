@@ -1,5 +1,5 @@
 import { Transform } from 'class-transformer';
-import { IsEnum, IsInt, IsNumber, IsOptional, IsString, IsUUID, Min } from 'class-validator';
+import { IsBoolean, IsDate, IsEnum, IsInt, IsNumber, IsOptional, IsString, IsUUID, Min } from 'class-validator';
 import { ApiProperty, ApiPropertyOptional } from '@nestjs/swagger';
 import { format } from 'date-fns';
 import { DiscountEnum } from '@delivery/db/db/enums/base.enum';
@@ -52,6 +52,23 @@ export class ProductResponseDto {
   @ApiProperty()
   @IsString()
   name: string;
+
+  @ApiProperty()
+  @IsString()
+  restaurantId: string;
+
+  @ApiProperty()
+  @IsString()
+  foodId: string;
+
+  @ApiProperty()
+  @IsBoolean()
+  isAvailable: boolean;
+
+  @ApiProperty()
+  @IsDate()
+  newUntil: Date;
+
 
   @ApiPropertyOptional()
   @IsString()
