@@ -1,8 +1,8 @@
-import { Body, ClassSerializerInterceptor, Controller, Get, Param, ParseUUIDPipe, Patch, Post, UploadedFile, UseInterceptors } from '@nestjs/common';
+import { Body, ClassSerializerInterceptor, Controller, Delete, Get, Param, ParseUUIDPipe, Patch, Post, UploadedFile, UseInterceptors } from '@nestjs/common';
 import { RestaurantsService } from './restaurants.service';
 import { ApiBearerAuth, ApiConsumes, ApiOperation } from '@nestjs/swagger';
 import { plainToInstance } from 'class-transformer';
-import { ProductCreateDto, ProductResponseDto } from '../products/product.dto';
+import { ProductResponseDto } from '../products/product.dto';
 import { FileInterceptor } from '@nestjs/platform-express';
 import { diskStorage } from 'multer';
 import { extname } from 'path';
@@ -92,5 +92,13 @@ async updateRestaurant(
   const restaurant = await this.restaurantsService.updateRestaurant(id, body, imageUrl);
   return plainToInstance(ProductResponseDto, restaurant);
 }
+
+  @Delete(':restaurantId')
+  @ApiOperation({ summary: 'Delete a restaurant by id' })
+  async deleteRestaurant(
+    @Param('restaurantId', ParseUUIDPipe) restaurantId: string,
+  ) {
+    return this.restaurantsService.deleteRestaurant(restaurantId);
+  }
 
 }
