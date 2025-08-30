@@ -8,38 +8,21 @@ import {
   } from 'typeorm';
 import { PriceEntity } from './prices.entity';
 import { WeighEntity } from './weighs.entity';
+import { RestaurantEntity } from './restaurant.entity';
 
 @Entity('products')
-export class ProductEntity {
+export class OrganizationEntity {
   @PrimaryGeneratedColumn('uuid')
   id: string;
 
   @Column()
   name: string;
 
-  @Column()
-  restaurantId:string;
-
-  @Column()
-  foodId:string;
-
-  @Column()
-  isAvailable: boolean;
-
-  @Column()
-  description: string;
-
-  @Column()
-  newUntil: Date;
-
   @Column({ nullable: true })
   image: string;
 
-  @OneToMany(() => PriceEntity, (price) => price.product)
-  prices: PriceEntity[];
-
-  @OneToMany(() => WeighEntity, (weigh) => weigh.product)
-  weighs: WeighEntity[];
+  @OneToMany(() => RestaurantEntity, (res) => res.organization)
+  restaurants: RestaurantEntity[];
 
   @CreateDateColumn({ name: 'created_at' })
   createdAt: Date;
