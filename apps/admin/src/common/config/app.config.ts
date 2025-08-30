@@ -1,9 +1,10 @@
 import { Configuration, Value } from "@itgorillaz/configify";
-import { IsNotEmpty, IsNumber, IsString } from "class-validator";
+import { Transform } from "class-transformer";
+import { IsNotEmpty, IsString } from "class-validator";
 
 @Configuration()
 export class AppConfig {
-  @IsNumber()
+ @Transform(({ value }) => parseInt(value))
   @IsNotEmpty()
   @Value('PORT')
   port: number;
@@ -28,7 +29,7 @@ export class AppConfig {
   @Value('DB_HOST')
   dbHost: string;
 
-  @IsNumber()
+   @Transform(({ value }) => parseInt(value))
   @IsNotEmpty()
   @Value('DB_PORT')
   dbPort: number;

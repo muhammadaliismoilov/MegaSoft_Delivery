@@ -4,23 +4,25 @@ import { ConfigifyModule } from '@itgorillaz/configify';
 import { ThrottlerGuard, ThrottlerModule } from '@nestjs/throttler';
 import { APP_GUARD } from '@nestjs/core';
 import { BannerModule } from './modules/banner/banner.module';
-import { SeederController } from './modules/seeder/seeder.controller';
 import { TypeOrmModule } from '@nestjs/typeorm';
 import { ProductModule } from './modules/products/product.module';
+import { AppConfig } from './common/config/app.config';
 
 @Module({
   imports: [
-    TypeOrmModule.forRoot({
-      type: 'postgres',
-      host: process.env.DB_HOST,
-      port: Number(process.env.DB_PORT),
-      username: process.env.DB_USERNAME,
-      password: process.env.DB_PASSWORD,
-      database:process.env.DB_NAME,
-      autoLoadEntities: true,
-      retryAttempts: 3,
-      entities:[],
-      synchronize:true
+ ConfigifyModule.forRootAsync(),
+    TypeOrmModule.forRootAsync({
+      inject: [AppConfig],
+      useFactory: (config: AppConfig) => ({
+        type: 'postgres',
+        host: config.dbHost,
+        port: config.dbPort,
+        username: config.dbUsername,
+        password: config.dbPassword,
+        database: config.dbName,
+        autoLoadEntities: true,
+        synchronize: true,
+      }),
     }),
     ThrottlerModule.forRoot({
       throttlers:[
@@ -30,11 +32,10 @@ import { ProductModule } from './modules/products/product.module';
         }
       ]
     }),
-    ConfigifyModule.forRootAsync(),
     BannerModule,
     ProductModule
   ],
-  controllers:[SeederController],
+  controllers:[],
   providers:[
     {
   provide: APP_GUARD,

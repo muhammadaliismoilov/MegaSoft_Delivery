@@ -12,6 +12,14 @@ export enum RoleEnum {
 }
 
 
+export enum logLevel {
+  INFO = 'info',
+  WARN = 'warn',
+  ERROR = 'error',
+  DEBUG = 'debug',
+  CRITICAL = 'critical',
+}
+
 export enum ImageTypeEnum {
     Banner = "banner",
     Restaurant = "restaurant",
@@ -23,11 +31,9 @@ export enum ImageTypeEnum {
     Drink = "drink",
     Diserst = "diserst",
     Souce_and_Addition = "souce_and_addition"
-
-
-
-
 }
+
+
 export enum LanguageTypeEnum  {
     Uz = "uz",
     Ru = "ru",
