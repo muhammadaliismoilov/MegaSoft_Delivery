@@ -25,6 +25,9 @@ export class RestaurantEntity {
   @Column()
   address: string;
 
+  @Column()
+  imageUrl: string;
+
   @Column('float')
   lat: number;
 

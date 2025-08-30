@@ -63,12 +63,11 @@ export class RestaurantsService {
 
     async deleteRestaurant(restaurantId: string) {
         try {
-
             const restaurant = await this.restaurantRepo.findOneBy({id: restaurantId})
             if(!restaurant) throw new NotFoundException('Restaurant not found')
 
             await this.restaurantRepo.delete(restaurantId)
-            return this.restaurantRepo.save(restaurant)
+            return `Restaurant with id:${restaurantId} deleted successfully!`
         } catch (error) {
             console.error(error)
             throw new HttpException('Internal server error', HttpStatus.INTERNAL_SERVER_ERROR)

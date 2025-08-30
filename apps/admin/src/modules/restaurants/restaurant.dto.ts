@@ -1,5 +1,42 @@
 import { IsBoolean, IsNumber, IsOptional, IsString, IsUUID } from 'class-validator';
 import { ApiProperty, ApiPropertyOptional } from '@nestjs/swagger';
+import { Expose, Type } from 'class-transformer';
+
+export class RestaurantResponseDto {
+    @Expose({ name: 'name', toPlainOnly: true })
+    @IsString()
+    name: string;
+
+    @Expose({ name: 'address', toPlainOnly: true })
+    @IsString()
+    address: string;
+
+    @Expose({ name: 'description', toPlainOnly: true })
+    @IsString()
+    description: string;
+
+    @Expose({ name: 'image_url', toPlainOnly: true })
+    @IsString()
+    imageUrl: string;
+
+    @Expose({ name: 'lat', toPlainOnly: true })
+    @Type(() => Number)
+    @IsNumber()
+    lat: number;
+
+    @Expose({ name: 'long', toPlainOnly: true })
+    @Type(() => Number)
+    @IsNumber()
+    long: number;
+
+    @Expose({ name: 'free_delivery', toPlainOnly: true })
+    @IsBoolean()
+    freeDelivery: boolean;
+
+    @Expose({ name: 'is_open', toPlainOnly: true })
+    @IsBoolean()
+    isOpen: boolean;
+}
 
 
 export class RestaurantCreateDto {
@@ -7,7 +44,7 @@ export class RestaurantCreateDto {
     @IsString()
     name: string;
 
-    @ApiPropertyOptional()
+    @ApiProperty()
     @IsString()
     address: string;
 
@@ -20,10 +57,17 @@ export class RestaurantCreateDto {
     description: string;
 
     @ApiProperty()
+    @IsString()
+    @IsOptional()
+    imageUrl?: string;
+
+    @ApiProperty()
+    @Type(() => Number)
     @IsNumber()
     lat: number;
 
     @ApiProperty()
+    @Type(() => Number)
     @IsNumber()
     long: number;
 
@@ -38,7 +82,7 @@ export class RestaurantCreateDto {
 
 
 export class RestaurantUpdateDto {
-    @ApiProperty()
+    @ApiPropertyOptional()
     @IsString()
     @IsOptional()
     name?: string;
@@ -48,32 +92,39 @@ export class RestaurantUpdateDto {
     @IsOptional()
     address?: string;
 
-    @ApiProperty()
+    @ApiPropertyOptional()
     @IsUUID()
     @IsOptional()
     organizationId?: string;
 
-    @ApiProperty()
+    @ApiPropertyOptional()
     @IsString()
     @IsOptional()
     description?: string;
 
-    @ApiProperty()
+    @ApiPropertyOptional()
+    @IsString()
+    @IsOptional()
+    imageUrl?: string;
+
+    @ApiPropertyOptional()
+    @Type(() => Number)
     @IsNumber()
     @IsOptional()
     lat?: number;
 
-    @ApiProperty()
+    @ApiPropertyOptional()
+    @Type(() => Number)
     @IsNumber()
     @IsOptional()
     long?: number;
 
-    @ApiProperty()
+    @ApiPropertyOptional()
     @IsBoolean()
     @IsOptional()
     freeDelivery?: boolean;
 
-    @ApiProperty()
+    @ApiPropertyOptional()
     @IsBoolean()
     @IsOptional()
     isOpen?: boolean;
