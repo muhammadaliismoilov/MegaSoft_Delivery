@@ -30,7 +30,7 @@ export class PriceEntity {
   discountType: DiscountEnum;
 
   @Column({ type: 'decimal', name: 'discount_value', nullable: true, precision: 10, scale: 2 })
-  discountValue: string;
+  discountValue: number;
 
   @Column({ name: 'last_price', default: false })
   lastPrice: boolean;

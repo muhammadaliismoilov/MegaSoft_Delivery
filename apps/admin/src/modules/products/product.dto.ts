@@ -1,23 +1,25 @@
-import {  Transform } from 'class-transformer';
-import { IsInt, IsOptional, IsString } from 'class-validator';
+import { Transform } from 'class-transformer';
+import { IsEnum, IsInt, IsNumber, IsOptional, IsString, IsUUID, Min } from 'class-validator';
 import { ApiProperty, ApiPropertyOptional } from '@nestjs/swagger';
 import { format } from 'date-fns';
+import { DiscountEnum } from '@delivery/db/db/enums/base.enum';
 
 export class ProductPriceDto {
   @ApiProperty()
-  id: string;
+  @IsUUID()
+  productId: string;
 
   @ApiProperty()
+  @IsNumber()
   price: number;
 
   @ApiPropertyOptional()
+  @IsEnum(DiscountEnum)
   discountType?: string;
 
   @ApiPropertyOptional()
+  @IsNumber()
   discountValue?: number;
-
-  @ApiProperty({ description: 'Indicates if this is the last price' })
-  lastPrice: boolean;
 
   @Transform(({ value }) => value ? format(new Date(value), 'yyyy-MM-dd HH:mm:ss') : null, { toPlainOnly: true })
   createdAt: Date;
@@ -28,9 +30,11 @@ export class ProductPriceDto {
 
 export class ProductWeighDto {
   @ApiProperty()
-  id: string;
+  @IsUUID()
+  productId: string;
 
   @ApiProperty()
+  @IsNumber()
   weigh: number;
 
   @Transform(({ value }) => value ? format(new Date(value), 'yyyy-MM-dd HH:mm:ss') : null, { toPlainOnly: true })
@@ -42,12 +46,15 @@ export class ProductWeighDto {
 
 export class ProductResponseDto {
   @ApiProperty()
+  @IsUUID()
   id: string;
 
   @ApiProperty()
+  @IsString()
   name: string;
 
   @ApiPropertyOptional()
+  @IsString()
   image?: string;
 
   @ApiProperty({ type: [ProductPriceDto] })
@@ -70,11 +77,17 @@ export class ProductCreateDto {
 
   @ApiProperty({ type: Number })
   @IsInt()
+  @Min(0)
   price: number;
 
-  @ApiPropertyOptional({ enum: ['PERCENTAGE', 'FIXED_AMOUNT'] })
+  @ApiProperty()
+  @IsString()
+  description: string;
+
+  @ApiPropertyOptional({ enum: DiscountEnum })
   @IsOptional()
-  discountType?: string;
+  @IsEnum(DiscountEnum)
+  discountType?: DiscountEnum;
 
   @ApiPropertyOptional()
   @IsInt()
@@ -100,12 +113,14 @@ export class ProductUpdateDto {
 
   @ApiPropertyOptional()
   @IsInt()
+  @Min(0)
   @IsOptional()
   price?: number;
 
-  @ApiPropertyOptional({ enum: ['PERCENTAGE', 'FIXED_AMOUNT'] })
+  @ApiPropertyOptional({ enum: DiscountEnum })
   @IsOptional()
-  discountType?: string;
+  @IsEnum(DiscountEnum)
+  discountType?: DiscountEnum;
 
   @ApiPropertyOptional()
   @IsInt()
