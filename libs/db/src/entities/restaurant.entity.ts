@@ -23,7 +23,7 @@ export class RestaurantEntity {
   description:string;
 
   @Column()
-  addreses: string;
+  address: string;
 
   @Column('float')
   lat: number;
