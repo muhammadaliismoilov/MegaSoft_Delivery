@@ -3,74 +3,73 @@ import { BadRequestException, HttpException, HttpStatus, Injectable, NotFoundExc
 import { InjectRepository } from '@nestjs/typeorm';
 import { Repository } from 'typeorm';
 import { RestaurantCreateDto, RestaurantUpdateDto } from './restaurant.dto';
+import fs from 'fs'
 
 @Injectable()
 export class RestaurantsService {
-    constructor(@InjectRepository(RestaurantEntity) private readonly restaurantRepo: Repository<RestaurantEntity>) { }
+  constructor(
+    @InjectRepository(RestaurantEntity)
+    private readonly restaurantRepo: Repository<RestaurantEntity>,
+  ) {}
 
-    async getAllRestaurants() {
-        try {
-            const restaurants = await this.restaurantRepo.find();
-            return restaurants
-        } catch (error) {
-            console.error(error)
-            throw new HttpException('Internal server error', HttpStatus.INTERNAL_SERVER_ERROR)
-        }
+  async getAllRestaurants() {
+    return this.restaurantRepo.find();
+  }
+
+  async getOneRestaurant(restaurantId: string) {
+    const restaurant = await this.restaurantRepo.findOneBy({ id: restaurantId });
+    if (!restaurant) {
+      throw new NotFoundException(`Restaurant with id: ${restaurantId} not found`);
+    }
+    return restaurant;
+  }
+
+  async createRestaurant(dto: RestaurantCreateDto) {
+    const newRestaurant = this.restaurantRepo.create(dto);
+    const saved = await this.restaurantRepo.save(newRestaurant);
+    if (!saved) {
+      throw new BadRequestException('Failed to create a new restaurant');
+    }
+    return saved;
+  }
+
+  async updateRestaurant(id: string, dto: RestaurantUpdateDto, imageUrl?: string) {
+    const restaurant = await this.restaurantRepo.findOneBy({ id });
+    if (!restaurant) {
+      throw new NotFoundException('Restaurant not found');
     }
 
-    async getOneRestaurant(restaurantId: string) {
+    if (imageUrl) {
+      if (restaurant.imageUrl) {
         try {
-            const restaurant = await this.restaurantRepo.findOne({ where: { id: restaurantId } })
-            if (!restaurant) {
-                throw new NotFoundException(`Restaurant with id: ${restaurantId} not found`)
-            }
-            return restaurant;
-        } catch (error) {
-            console.error(error)
-            throw new HttpException('Internal server error', HttpStatus.INTERNAL_SERVER_ERROR)
+          fs.unlinkSync(`.${restaurant.imageUrl}`);
+        } catch (err) {
+          console.warn('Old image not found:', err.message);
         }
+      }
+      restaurant.imageUrl = imageUrl;
     }
 
-    async createRestaurant(dto: RestaurantCreateDto) {
-        try {
+    Object.assign(restaurant, dto);
+    return this.restaurantRepo.save(restaurant);
+  }
 
-            const newProduct = this.restaurantRepo.create(dto);
-            const savedProduct = await this.restaurantRepo.save(newProduct);
-
-            if (!savedProduct) {
-                throw new BadRequestException('Failed to create a new restaurant');
-            }
-
-        } catch (error) {
-            console.error(error)
-            throw new HttpException('Internal server error', HttpStatus.INTERNAL_SERVER_ERROR)
-        }
+  async deleteRestaurant(restaurantId: string) {
+    const restaurant = await this.restaurantRepo.findOneBy({ id: restaurantId });
+    if (!restaurant) {
+      throw new NotFoundException('Restaurant not found');
     }
 
-    async updateRestaurant(restaurantId: string, dto:RestaurantUpdateDto) {
-        try {
-
-            const restaurant = await this.restaurantRepo.findOneBy({id: restaurantId})
-            if(!restaurant) throw new NotFoundException('Restaurant not found')
-
-            Object.assign(restaurant, dto, {updatedAt: new Date()})
-            return this.restaurantRepo.save(restaurant)
-        } catch (error) {
-            console.error(error)
-            throw new HttpException('Internal server error', HttpStatus.INTERNAL_SERVER_ERROR)
-        }
+    if (restaurant.imageUrl) {
+      try {
+        fs.unlinkSync(`.${restaurant.imageUrl}`);
+      } catch (err) {
+        console.warn('Could not delete image:', err.message);
+      }
     }
 
-    async deleteRestaurant(restaurantId: string) {
-        try {
-            const restaurant = await this.restaurantRepo.findOneBy({id: restaurantId})
-            if(!restaurant) throw new NotFoundException('Restaurant not found')
-
-            await this.restaurantRepo.delete(restaurantId)
-            return `Restaurant with id:${restaurantId} deleted successfully!`
-        } catch (error) {
-            console.error(error)
-            throw new HttpException('Internal server error', HttpStatus.INTERNAL_SERVER_ERROR)
-        }
-    }
+    await this.restaurantRepo.delete(restaurantId);
+    return { message: `Restaurant with id:${restaurantId} deleted successfully!` };
+  }
 }
+

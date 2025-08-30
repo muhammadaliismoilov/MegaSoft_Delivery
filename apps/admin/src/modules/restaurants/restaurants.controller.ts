@@ -1,4 +1,4 @@
-import { Body, ClassSerializerInterceptor, Controller, Get, Param, ParseUUIDPipe, Post, UploadedFile, UseInterceptors } from '@nestjs/common';
+import { Body, ClassSerializerInterceptor, Controller, Get, Param, ParseUUIDPipe, Patch, Post, UploadedFile, UseInterceptors } from '@nestjs/common';
 import { RestaurantsService } from './restaurants.service';
 import { ApiBearerAuth, ApiConsumes, ApiOperation } from '@nestjs/swagger';
 import { plainToInstance } from 'class-transformer';
@@ -30,13 +30,14 @@ export class RestaurantsController {
         filename: (req, file, cb) => {
           const uniqueSuffix = Date.now() + "-" + Math.round(Math.random() * 1e9);
           const ext = extname(file.originalname);
+          cb(null, `${uniqueSuffix}${ext}`);
         }
       })
     }),
   )
   @ApiConsumes('multipart/form-data')
   @ApiOperation({ summary: 'Create a new restaurant' })
-  async create(
+  async createRestaurant(
     @UploadedFile() image: Express.Multer.File,
     @Body() body: RestaurantCreateDto,
     req: express.Request
@@ -59,4 +60,37 @@ export class RestaurantsController {
     const restaurant = await this.restaurantsService.getOneRestaurant(restaurantId);
     return plainToInstance(ProductResponseDto, restaurant);
   }
+
+@Patch(':id')
+@UseInterceptors(
+  FileInterceptor('image', {
+    storage: diskStorage({
+      destination: './uploads',
+      filename: (req, file, cb) => {
+        const uniqueSuffix = Date.now() + "-" + Math.round(Math.random() * 1e9);
+        const ext = extname(file.originalname);
+        cb(null, `${uniqueSuffix}${ext}`);
+      },
+    }),
+  }),
+)
+@ApiConsumes('multipart/form-data')
+@ApiOperation({ summary: 'Update the restaurant details' })
+async updateRestaurant(
+  @Param('id', ParseUUIDPipe) id: string,
+  @UploadedFile() image: Express.Multer.File,
+  @Body() body: RestaurantCreateDto,
+  req: express.Request,
+) {
+  let imageUrl: string | undefined;
+
+  if (image) {
+    const filePath = `/uploads/${image.filename}`;
+    imageUrl = `${req.protocol}://${req.get('host')}${filePath}`;
+  }
+
+  const restaurant = await this.restaurantsService.updateRestaurant(id, body, imageUrl);
+  return plainToInstance(ProductResponseDto, restaurant);
+}
+
 }

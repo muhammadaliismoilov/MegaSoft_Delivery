@@ -17,7 +17,7 @@ export class ProductService {
     private readonly dataSource: DataSource,
   ) {}
 
-  // Get all banners ordered by sequence
+  // Get all products ordered by sequence
   async getAllProducts() {
  try {
   const products = await this.productRepo.find({relations:['prices', 'weighs']});
@@ -40,7 +40,7 @@ export class ProductService {
       throw new HttpException('Internal server error', HttpStatus.INTERNAL_SERVER_ERROR)
     }
   }
-  // Create a new banner
+  // Create a new product
   
   async createProduct(dto: ProductCreateDto) {
     try {
@@ -85,7 +85,7 @@ export class ProductService {
     }
   }
 
-  // Update a banner
+  // Update a product
 async updateProduct(productId: string, dto: ProductUpdateDto) {
   const { price, weighs, discountType, discountValue, ...details } = dto;
 
