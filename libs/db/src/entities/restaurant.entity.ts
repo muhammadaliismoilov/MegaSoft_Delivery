@@ -8,7 +8,7 @@ import {
   } from 'typeorm';
 import { OrganizationEntity } from './organization.entity';
 
-@Entity('products')
+@Entity('restaurants')
 export class RestaurantEntity {
   @PrimaryGeneratedColumn('uuid')
   id: string;

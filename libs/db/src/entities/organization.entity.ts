@@ -6,11 +6,9 @@ import {
     UpdateDateColumn,
     OneToMany
   } from 'typeorm';
-import { PriceEntity } from './prices.entity';
-import { WeighEntity } from './weighs.entity';
 import { RestaurantEntity } from './restaurant.entity';
 
-@Entity('products')
+@Entity('organizations')
 export class OrganizationEntity {
   @PrimaryGeneratedColumn('uuid')
   id: string;

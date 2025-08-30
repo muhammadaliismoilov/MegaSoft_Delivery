@@ -1,6 +1,6 @@
-export enum DiscountEnum{
-    PERCENTAGE='percentage',
-    AMOUNT='amount'
+export enum DiscountEnum {
+  PERCENTAGE = 'percentage',
+  AMOUNT = 'amount'
 }
 
 export enum RoleEnum {
@@ -21,21 +21,31 @@ export enum logLevel {
 }
 
 export enum ImageTypeEnum {
-    Banner = "banner",
-    Restaurant = "restaurant",
-    Categorie = "categorie",
-    Product = "product",
-    Coffee = "coffee",
-    Tea = "tea",
-    Fruit_Drink = "fruit_drink",
-    Drink = "drink",
-    Diserst = "diserst",
-    Souce_and_Addition = "souce_and_addition"
+  Banner = "banner",
+  Restaurant = "restaurant",
+  Categorie = "categorie",
+  Product = "product",
+  Coffee = "coffee",
+  Tea = "tea",
+  Fruit_Drink = "fruit_drink",
+  Drink = "drink",
+  Diserst = "diserst",
+  Souce_and_Addition = "souce_and_addition"
 }
 
 
-export enum LanguageTypeEnum  {
-    Uz = "uz",
-    Ru = "ru",
-    En = "en"
+export enum LanguageTypeEnum {
+  Uz = "uz",
+  Ru = "ru",
+  En = "en"
+}
+
+export enum WeekDays {
+  MONDAY = 'monday',
+  TUESDAY = 'tuesday',
+  WEDNESDAY = 'wednesday',
+  THURSDAY = 'thursday',
+  FRIDAY = 'friday',
+  SATURDAY = 'saturday',
+  SUNDAY = 'sunday'
 }
