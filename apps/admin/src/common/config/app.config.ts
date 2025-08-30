@@ -9,6 +9,11 @@ export class AppConfig {
   @Value('PORT')
   port: number;
 
+ @Transform(({ value }) => parseInt(value))
+  @IsNotEmpty()
+  @Value('PORT_ADMIN')
+  portAdmin: number;
+
   @IsString()
   @IsNotEmpty()
   @Value('DB_NAME')

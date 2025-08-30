@@ -76,34 +76,34 @@ export class BannerService {
 
   // Create a new banner with auto-incremented sequence
   async create(dto: BannerCreateDTO) {
-    // try {
-    //   const maxSeq = await this.bannerRepo
-    //     .createQueryBuilder('banner')
-    //     .select('MAX(banner.sequence)', 'max')
-    //     .getRawOne<{ max: number }>();
+    try {
+      const maxSeq = await this.bannerRepo
+        .createQueryBuilder('banner')
+        .select('MAX(banner.sequence)', 'max')
+        .getRawOne<{ max: number }>();
   
-    //   const sequence = (maxSeq?.max || 0) + 1;
+      const sequence = (maxSeq?.max || 0) + 1;
   
-    //   // Convert dates to string or undefined
-    //   const startDate = dto.startDate ? dto.startDate.toISOString().split('T')[0] : null;
-    //   const endDate = dto.endDate ? dto.endDate.toISOString().split('T')[0] : null;
+      // Convert dates to string or undefined
+      const startDate = dto.startDate ? dto.startDate.toISOString().split('T')[0] : null;
+      const endDate = dto.endDate ? dto.endDate.toISOString().split('T')[0] : null;
   
-    //   const banner = this.bannerRepo.create({
-    //     title: dto.title,
-    //     isActive: dto.isActive ?? true,
-    //     sequence,
-    //     startDate,
-    //     endDate,
-    //   });
+      const banner = this.bannerRepo.create({
+        title: dto.title,
+        isActive: dto.isActive ?? true,
+        sequence,
+        startDate,
+        endDate,
+      } as Partial<BannerEntity>);
   
-    //   return this.bannerRepo.save(banner);
-    // } catch (error) {
-    //   console.error(error);
-    //   throw new HttpException(
-    //     'Internal server error',
-    //     HttpStatus.INTERNAL_SERVER_ERROR,
-    //   );
-    // }
+      return this.bannerRepo.save(banner);
+    } catch (error) {
+      console.error(error);
+      throw new HttpException(
+        'Internal server error',
+        HttpStatus.INTERNAL_SERVER_ERROR,
+      );
+    }
   }
   
 
