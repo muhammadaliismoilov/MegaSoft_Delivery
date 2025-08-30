@@ -1,8 +1,8 @@
-import { Controller, Get, Param, ParseUUIDPipe } from '@nestjs/common';
+import { Body, Controller, Delete, Get, Param, ParseUUIDPipe, Patch, Post } from '@nestjs/common';
 import { WorkDaysService } from './work_days.service';
 import { ApiBearerAuth, ApiOperation } from '@nestjs/swagger';
 import { plainToInstance } from 'class-transformer';
-import { WorkDaysResponseDto } from './work_days.dto';
+import { WorkDaysCreateDto, WorkDaysResponseDto, WorkDaysUpdateDto } from './work_days.dto';
 
 
 @Controller('work-days')
@@ -22,5 +22,29 @@ export class WorkDaysController {
   async getOne(@Param('restaurantId', ParseUUIDPipe) workDayId: string) {
     const workDay = await this.workDaysService.getOneWorkDay(workDayId);
     return plainToInstance(WorkDaysResponseDto, workDay);
+  }
+
+    // --- Create Work Day ---
+  @Post('work-days')
+  @ApiOperation({ summary: 'Create work day for a restaurant' })
+  async createWorkDay(@Body() dto: WorkDaysCreateDto) {
+    return this.workDaysService.createworkDay(dto);
+  }
+
+  // --- Update Work Day ---
+  @Patch('work-days/:id')
+  @ApiOperation({ summary: 'Update work day by id' })
+  async updateWorkDay(
+    @Param('id', ParseUUIDPipe) id: string,
+    @Body() dto: WorkDaysUpdateDto,
+  ) {
+    return this.workDaysService.updateworkDay(id, dto);
+  }
+
+  // --- Delete Work Day ---
+  @Delete('work-days/:id')
+  @ApiOperation({ summary: 'Delete work day by id' })
+  async deleteWorkDay(@Param('id', ParseUUIDPipe) id: string) {
+    return this.workDaysService.deleteworkDays(id);
   }
 }
