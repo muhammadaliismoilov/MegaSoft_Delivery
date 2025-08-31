@@ -7,6 +7,7 @@ import { BannerModule } from './modules/banner/banner.module';
 import { TypeOrmModule } from '@nestjs/typeorm';
 import { ProductModule } from './modules/products/product.module';
 import { AppConfig } from './common/config/app.config';
+import { FoodsModule } from './modules/foods/foods.module';
 
 @Module({
   imports: [
@@ -33,7 +34,8 @@ import { AppConfig } from './common/config/app.config';
       ]
     }),
     BannerModule,
-    ProductModule
+    ProductModule,
+    FoodsModule
   ],
   controllers:[],
   providers:[
