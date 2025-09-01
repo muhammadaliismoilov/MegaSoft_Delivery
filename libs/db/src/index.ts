@@ -4,3 +4,6 @@ export * from './entities/product.entity';
 export * from './entities/prices.entity';
 export * from './entities/weighs.entity';
 export * from './entities/foods.entity';
+export * from './entities/restaurant.entity';
+export * from './entities/work_days.entity';
+export * from './entities/organization.entity';

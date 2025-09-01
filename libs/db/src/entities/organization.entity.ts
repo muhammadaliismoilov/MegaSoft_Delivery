@@ -13,8 +13,8 @@ export class OrganizationEntity {
   @PrimaryGeneratedColumn('uuid')
   id: string;
 
-  @Column()
-  name: string;
+  @Column({ type: 'jsonb', nullable: true })
+  title:{ uz: string; ru: string; en: string };
 
   @Column({ nullable: true })
   image: string;

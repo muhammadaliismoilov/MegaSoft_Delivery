@@ -8,6 +8,11 @@ import { TypeOrmModule } from '@nestjs/typeorm';
 import { ProductModule } from './modules/products/product.module';
 import { AppConfig } from './common/config/app.config';
 import { FoodsModule } from './modules/foods/foods.module';
+import { RestaurantsModule } from './modules/restaurants/restaurants.module';
+import { WorkDaysModule } from './modules/work_days/work_days.module';
+import { OrganizationModule } from './modules/organizations/organizations.module';
+
+
 
 @Module({
   imports: [
@@ -33,9 +38,16 @@ import { FoodsModule } from './modules/foods/foods.module';
         }
       ]
     }),
+    OrganizationModule,
+    RestaurantsModule,
     BannerModule,
     ProductModule,
-    FoodsModule
+    FoodsModule,
+    WorkDaysModule
+
+
+
+
   ],
   controllers:[],
   providers:[

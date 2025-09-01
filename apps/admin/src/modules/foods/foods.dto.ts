@@ -11,7 +11,6 @@ export class CreateFoodDto {
   title: { uz: string; ru: string; en: string };
 
   @ApiProperty({ type: 'string', format: 'binary', description: 'Ovqat rasmi (fayl)' })
-//   @IsNotEmpty()
   image: any; // Swagger bilan file upload uchun
 }
 
