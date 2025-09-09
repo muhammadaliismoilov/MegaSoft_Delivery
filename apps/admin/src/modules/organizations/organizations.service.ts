@@ -72,9 +72,7 @@ export class OrganizationService {
   // 🔵 Barcha tashkilotlarni olish
   async findAll() {
     try {
-      return await this.orgRepository.find({
-        relations: ['restaurants'],
-      });
+      return await this.orgRepository.find();
     } catch (error) {
       throw new InternalServerErrorException(
         `Tashkilotlarni olishda xato: ${error.message}`,

@@ -4,9 +4,11 @@ import {
     Column,
     CreateDateColumn,
     UpdateDateColumn,
-    OneToMany
+    OneToMany,
+    ManyToOne
   } from 'typeorm';
 import { BannerImageEntity } from './banner_images.entity';
+import { RestaurantEntity } from './restaurants.entity';
 
 @Entity('banners')
 export class BannerEntity {
@@ -15,6 +17,11 @@ export class BannerEntity {
 
   @Column()
   title: string;
+  
+   @ManyToOne(() => RestaurantEntity, (restaurant) => restaurant.banners, {
+    onDelete: 'CASCADE',
+  })
+  restaurant: RestaurantEntity;
 
   @Column({ name: 'is_active', default: true })
   isActive: boolean;

@@ -7,7 +7,7 @@ import {
     ManyToOne,
     Unique,
   } from 'typeorm'
-import { ProductEntity } from './product.entity';
+import { ProductEntity } from './products.entity';
 
 @Entity('weighs')
 @Unique('unique_product_weigh', ['product', 'weigh'])

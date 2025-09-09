@@ -4,16 +4,20 @@ import {
     Column,
     CreateDateColumn,
     UpdateDateColumn,
+    OneToOne,
   } from 'typeorm';
 import { WeekDays } from '../enums/base.enum';
+import { RestaurantEntity } from './restaurants.entity';
 
 @Entity('work_days')
 export class WorkDaysEntity {
   @PrimaryGeneratedColumn('uuid')
   id: string;
 
-  @Column()
-  restaurantId:string;
+   @OneToOne(() => RestaurantEntity, (restaurant) => restaurant.workdays, {
+    // onDelete: 'CASCADE',
+  })
+  restaurant: RestaurantEntity;
 
   @Column({type: 'enum', enum: WeekDays })
   dayOfWeek: WeekDays;

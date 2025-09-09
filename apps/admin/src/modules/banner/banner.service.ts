@@ -2,6 +2,7 @@ import {
   HttpException,
   HttpStatus,
   Injectable,
+  InternalServerErrorException,
   NotFoundException,
 } from '@nestjs/common';
 import {
@@ -11,7 +12,7 @@ import {
 } from './banner.dto';
 import { InjectRepository } from '@nestjs/typeorm';
 import { Repository } from 'typeorm';
-import { BannerEntity, BannerImageEntity } from 'libs/db/src';
+import { BannerEntity, BannerImageEntity, FoodTypesEntity, RestaurantEntity } from 'libs/db/src';
 
 @Injectable()
 export class BannerService {
@@ -20,6 +21,10 @@ export class BannerService {
     private readonly bannerRepo: Repository<BannerEntity>,
     @InjectRepository(BannerImageEntity)
     private readonly bannerImageRepo: Repository<BannerImageEntity>,
+    @InjectRepository(RestaurantEntity)
+    private readonly restaurantRepo: Repository<RestaurantEntity>,
+    @InjectRepository(FoodTypesEntity)
+    private readonly foodTypeRepo: Repository<FoodTypesEntity>,
   ) {}
 
   // Get all banners ordered by sequence, with images grouped by language
@@ -77,25 +82,37 @@ export class BannerService {
   // Create a new banner with auto-incremented sequence
   async create(dto: BannerCreateDTO) {
     try {
+
+      const restaurant = await this.restaurantRepo.findOneBy({ id: dto.restaurantId });
+      if (!restaurant) throw new NotFoundException('Restauran topilmadi');
+      
+      const foodType = await this.foodTypeRepo.findOneBy({ id: dto.foodTypeId });
+      if (!foodType) throw new NotFoundException('Oziq-ovqat turi topilmadi');
       const maxSeq = await this.bannerRepo
         .createQueryBuilder('banner')
         .select('MAX(banner.sequence)', 'max')
         .getRawOne<{ max: number }>();
-  
+
       const sequence = (maxSeq?.max || 0) + 1;
-  
+ 
       // Convert dates to string or undefined
-      const startDate = dto.startDate ? dto.startDate.toISOString().split('T')[0] : null;
-      const endDate = dto.endDate ? dto.endDate.toISOString().split('T')[0] : null;
-  
+      const startDate = dto.startDate
+        ? dto.startDate.toISOString().split('T')[0]
+        : null;
+      const endDate = dto.endDate
+        ? dto.endDate.toISOString().split('T')[0]
+        : null;
+
       const banner = this.bannerRepo.create({
         title: dto.title,
         isActive: dto.isActive ?? true,
+        restaurant,
+        foodType,
         sequence,
         startDate,
         endDate,
       } as Partial<BannerEntity>);
-  
+
       return this.bannerRepo.save(banner);
     } catch (error) {
       console.error(error);
@@ -105,7 +122,6 @@ export class BannerService {
       );
     }
   }
-  
 
   // Update a banner
   async update(bannerId: string, dto: BannerUpdateDTO) {
@@ -150,10 +166,52 @@ export class BannerService {
   }
 
   // Upload or update banner images per language
+  // async uploadOrUpdate(
+  //   bannerId: string,
+  //   images: {
+  //     uz?: Express.Multer.File | null;
+  //     ru?: Express.Multer.File | null;
+  //     en?: Express.Multer.File | null;
+  //   },
+  // ) {
+  //   try {
+  //     const banner = await this.bannerRepo.findOneBy({ id: bannerId });
+  //     if (!banner) throw new NotFoundException('Banner not found');
+
+  //     for (const [lang, file] of Object.entries(images)) {
+  //       if (!file?.filename) continue;
+
+  //       let bannerImage = await this.bannerImageRepo.findOne({
+  //         where: { banner: { id: bannerId }, lang },
+  //       });
+
+  //       if (bannerImage) {
+  //         bannerImage.path = file.filename;
+  //       } else {
+  //         bannerImage = this.bannerImageRepo.create({
+  //           banner,
+  //           lang,
+  //           path: file.filename,
+  //         });
+  //       }
+
+  //       return this.bannerImageRepo.save(bannerImage);
+  //     }
+
+  //   } catch (error) {
+  //     console.error(error);
+  //     throw new HttpException(
+  //       'Internal server error',
+  //       HttpStatus.INTERNAL_SERVER_ERROR,
+  //     );
+  //   }
+  // }
+
+  // Update banner sequence with reordering
+
   async uploadOrUpdate(
     bannerId: string,
     images: {
-      oz: Express.Multer.File | null;
       uz?: Express.Multer.File | null;
       ru?: Express.Multer.File | null;
       en?: Express.Multer.File | null;
@@ -180,18 +238,19 @@ export class BannerService {
           });
         }
 
-        await this.bannerImageRepo.save(bannerImage);
+        const saved = await this.bannerImageRepo.save(bannerImage);
       }
+
+      return {
+        message: 'Rasm yuklanidi yoki yangilandi' 
+      };
+      // barcha natijalarni qaytaramiz
     } catch (error) {
       console.error(error);
-      throw new HttpException(
-        'Internal server error',
-        HttpStatus.INTERNAL_SERVER_ERROR,
-      );
+      throw new InternalServerErrorException('Internal server error');
     }
   }
 
-  // Update banner sequence with reordering
   async updateSequence(bannerId: string, dto: BannerSequenceDto) {
     try {
       const banner = await this.bannerRepo.findOneBy({ id: bannerId });

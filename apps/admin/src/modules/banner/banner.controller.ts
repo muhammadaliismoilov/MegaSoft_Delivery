@@ -66,7 +66,7 @@ import { extname } from 'path';
       bannerId: string,
       @Body() dto: BannerUpdateDTO,
     ) {
-      await this.bannerService.update(bannerId, dto);
+      return this.bannerService.update(bannerId, dto);
     }
   
     
@@ -74,7 +74,6 @@ import { extname } from 'path';
     @UseInterceptors(
       FileFieldsInterceptor(
         [
-          { name: 'image.oz', maxCount: 1 },
           { name: 'image.uz', maxCount: 1 },
           { name: 'image.ru', maxCount: 1 },
           { name: 'image.en', maxCount: 1 },
@@ -95,9 +94,8 @@ import { extname } from 'path';
     @ApiBody({
       schema: {
         type: 'object',
-        required: ['image.oz'],
+        // required: ['image.uz'],
         properties: {
-          'image.oz': { type: 'string', format: 'binary' },
           'image.uz': { type: 'string', format: 'binary' },
           'image.ru': { type: 'string', format: 'binary' },
           'image.en': { type: 'string', format: 'binary' },
@@ -109,19 +107,18 @@ import { extname } from 'path';
       @Param('bannerId', ParseUUIDPipe) bannerId: string,
       @UploadedFiles()
       files: {
-        'image.oz'?: Express.Multer.File[];
+   
         'image.uz'?: Express.Multer.File[];
         'image.ru'?: Express.Multer.File[];
         'image.en'?: Express.Multer.File[];
       },
     ) {
       const image = {
-        oz: files['image.oz']?.[0] || null,
         uz: files['image.uz']?.[0] || null,
         ru: files['image.ru']?.[0] || null,
         en: files['image.en']?.[0] || null,
       };
-      await this.bannerService.uploadOrUpdate(bannerId, image);
+      return this.bannerService.uploadOrUpdate(bannerId, image);
     }
     
   
@@ -129,7 +126,7 @@ import { extname } from 'path';
     @ApiOperation({ summary: 'Delete a banner' })
     @ApiNoContentResponse()
     async delete(@Param('id', ParseUUIDPipe) id: string) {
-      await this.bannerService.delete(id);
+      return this.bannerService.delete(id);
     }
 
     @Post(':id/sequence')
@@ -139,7 +136,7 @@ import { extname } from 'path';
       @Param('id', ParseUUIDPipe) id: string,
       @Body() dto: BannerSequenceDto,
     ) {
-      await this.bannerService.updateSequence(id, dto);
+      return this.bannerService.updateSequence(id, dto);
     }
   }
   

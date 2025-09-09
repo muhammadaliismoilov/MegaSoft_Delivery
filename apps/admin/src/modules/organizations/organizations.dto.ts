@@ -2,36 +2,44 @@ import { ApiProperty, PartialType } from '@nestjs/swagger';
 import {
   IsJSON,
   IsNotEmpty,
+  IsObject,
   IsOptional,
   IsString,
   IsUrl,
+  IsUUID,
   ValidateNested,
 } from 'class-validator';
-import { Type } from 'class-transformer';
+import { Expose, Type } from 'class-transformer';
 
-/**
- * Ko‘p tilli nomlar uchun DTO
-//  */
-// class TranslatableDto {
-//   @ApiProperty({ example: 'MegaSoft', description: 'Tashkilot nomi (O‘zbekcha)' })
-//   @IsNotEmpty({ message: 'O‘zbekcha nom bo‘sh bo‘lmasligi kerak' })
-//   @IsString({ message: 'O‘zbekcha nom matn bo‘lishi kerak' })
-//   uz: string;
 
-//   @ApiProperty({ example: 'МегаСофт', description: 'Tashkilot nomi (Ruscha)' })
-//   @IsNotEmpty({ message: 'Ruscha nom bo‘sh bo‘lmasligi kerak' })
-//   @IsString({ message: 'Ruscha nom matn bo‘lishi kerak' })
-//   ru: string;
+export class OrganizationResponseDto {
+  @Expose({ name: 'id', toPlainOnly: true })
+  @IsUUID()
+  @ApiProperty({
+    example: '7a3c5e47-6e23-4fd7-91c1-123456789abc',
+    description: 'Organizatsiya ID',
+  })
+  id: string;
 
-//   @ApiProperty({ example: 'MegaSoft', description: 'Tashkilot nomi (Inglizcha)' })
-//   @IsNotEmpty({ message: 'Inglizcha nom bo‘sh bo‘lmasligi kerak' })
-//   @IsString({ message: 'Inglizcha nom matn bo‘lishi kerak' })
-//   en: string;
-// }
+  @Expose({ name: 'title', toPlainOnly: true })
+  @IsObject()
+  @ApiProperty({
+    example: { uz: 'MegaFood', ru: 'МегаФуд', en: 'MegaFood' },
+    description: 'Organizatsiya nomi (ko‘p tillarda)',
+  })
+  title: { uz: string; ru: string; en: string };
 
-// /**
-//  * Yangi tashkilot qo‘shish uchun DTO
-//  */
+  @Expose({ name: 'image', toPlainOnly: true })
+  @IsString()
+  @ApiProperty({
+    example: '/uploads/organizations/logo.png',
+    description: 'Organizatsiya rasmi URL',
+  })
+  image: string;
+
+
+}
+
 export class CreateOrganizationDto {
   @ApiProperty({
     // type: TranslatableDto,/

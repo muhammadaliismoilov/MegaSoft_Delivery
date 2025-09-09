@@ -29,7 +29,7 @@ export class BannerResponseDto {
   
   @Expose({ name: 'food_id', toPlainOnly: true })
   @IsUUID()
-  foodId: string;
+  foodTypeId: string;
 
   sequence: number;
   @Expose({ name: 'start_date', toPlainOnly: true })
@@ -63,7 +63,7 @@ export class BannerCreateDTO {
   @ApiProperty({ type: String })
   @Expose({ name: 'food_id', toPlainOnly: true })
   @IsUUID()
-  foodId: string;
+  foodTypeId: string;
 
   @ApiProperty({
     default: true,
@@ -113,7 +113,7 @@ export class BannerUpdateDTO {
   @Expose({ name: 'food_id', toPlainOnly: true })
   @IsUUID()
   @IsOptional()
-  foodId?: string;
+  foodTypeId?: string;
 
   @IsBoolean()
   @IsOptional()

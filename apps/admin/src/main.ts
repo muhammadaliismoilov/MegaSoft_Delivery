@@ -23,7 +23,7 @@ async function bootstrap() {
   SwaggerModule.setup('docs', app, document);
 
   await app.listen(PORT, ()=>
-     console.log(`Server is running ${PORT}   ` + `   Swagger is running  http://localhost:${PORT}/docs`),
+     console.log(`Server is running ${PORT}   ` + `   Swagger is running  ADMIN http://localhost:${PORT}/docs`),
   );
   ;
 }

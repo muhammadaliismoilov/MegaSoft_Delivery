@@ -1,13 +1,11 @@
-import { Body, ClassSerializerInterceptor, Controller, Delete, Get, Param, ParseUUIDPipe, Patch, Post, UploadedFile, UseInterceptors } from '@nestjs/common';
+import { BadRequestException, Body, ClassSerializerInterceptor, Controller, Delete, Get, HttpCode, HttpStatus, InternalServerErrorException, NotFoundException, Param, ParseUUIDPipe, Patch, Post, Req, UploadedFile, UseInterceptors } from '@nestjs/common';
 import { RestaurantsService } from './restaurants.service';
-import { ApiBearerAuth, ApiConsumes, ApiOperation } from '@nestjs/swagger';
+import { ApiBearerAuth, ApiBody, ApiConsumes, ApiOperation, ApiResponse } from '@nestjs/swagger';
 import { plainToInstance } from 'class-transformer';
-import { ProductResponseDto } from '../products/product.dto';
 import { FileInterceptor } from '@nestjs/platform-express';
 import { diskStorage } from 'multer';
-import { extname } from 'path';
-import express from 'express';
-import { RestaurantCreateDto } from './restaurant.dto';
+import path, { extname } from 'path';
+import { RestaurantCreateDto, RestaurantResponseDto, RestaurantUpdateDto } from './restaurant.dto';
 
 @UseInterceptors(ClassSerializerInterceptor)
 @Controller('restaurants')
@@ -18,87 +16,151 @@ export class RestaurantsController {
   @Get()
   @ApiOperation({ summary: 'Get all restaurants' })
   async get() {
-    const restaurants = await this.restaurantsService.getAllRestaurants();
-    return plainToInstance(ProductResponseDto, restaurants);
+    const restaurants = await this.restaurantsService.getAll();
+    return plainToInstance(RestaurantResponseDto, restaurants);
   }
 
   @Post()
+  @HttpCode(HttpStatus.CREATED)
+  @ApiOperation({
+    summary: 'Yangi restoran qo‘shish',
+    description: 'Yangi restoran qo‘shish uchun ishlatiladi. Rasm fayl sifatida yuboriladi.',
+  })
+  @ApiConsumes('multipart/form-data')
+  @ApiBody({ type: RestaurantCreateDto })
+  @ApiResponse({ status: 201, description: 'Restoran muvaffaqiyatli qo‘shildi' })
+  @ApiResponse({ status: 400, description: 'Noto‘g‘ri ma’lumot yuborilgan' })
   @UseInterceptors(
     FileInterceptor('image', {
       storage: diskStorage({
         destination: './uploads',
         filename: (req, file, cb) => {
-          const uniqueSuffix = Date.now() + "-" + Math.round(Math.random() * 1e9);
+          const uniqueSuffix = Date.now() + '-' + Math.round(Math.random() * 1e9);
           const ext = extname(file.originalname);
           cb(null, `${uniqueSuffix}${ext}`);
-        }
-      })
+        },
+      }),
     }),
   )
-  @ApiConsumes('multipart/form-data')
-  @ApiOperation({ summary: 'Create a new restaurant' })
-  async createRestaurant(
-    @UploadedFile() image: Express.Multer.File,
+
+  async create(
+    @UploadedFile() file: Express.Multer.File,
     @Body() body: RestaurantCreateDto,
-    req: express.Request
+    @Req() req: Request,
   ) {
-    const filePath = `/uploads/${image.filename}`;
-    const serverUrl = `${req.protocol}://${req.get('host')}/${filePath}`;
-
     try {
-      body.imageUrl = serverUrl
-      const restaurant = await this.restaurantsService.createRestaurant(body);
-      return plainToInstance(ProductResponseDto, restaurant);
-    } catch (error) {
+      if (!file) {
+        throw new BadRequestException('Rasm fayl yuborilishi shart');
+      }
 
+      // Fayl pathni saqlash
+      const filePath = `/uploads/${file.filename}`;
+      body.image = filePath;
+
+      const restaurant = await this.restaurantsService.create(body);
+
+      return {
+        statusCode: HttpStatus.CREATED,
+        message: 'Restoran muvaffaqiyatli qo‘shildi',
+        data: restaurant,
+      };
+    } catch (error) {
+      throw new BadRequestException(error.message || 'Restoran qo‘shishda xatolik yuz berdi');
     }
   }
 
   @Get(':restaurantId')
   @ApiOperation({ summary: 'Get one restaurant with its images' })
-  async getOne(@Param('restaurantId', ParseUUIDPipe) restaurantId: string) {
-    const restaurant = await this.restaurantsService.getOneRestaurant(restaurantId);
-    return plainToInstance(ProductResponseDto, restaurant);
+  async getOne(@Param('restaurantId') restaurantId: string) {
+    const restaurant = await this.restaurantsService.getOne(restaurantId);
+    return plainToInstance(RestaurantResponseDto, restaurant);
   }
-
-@Patch(':id')
+  @Patch(':id')
+@ApiOperation({ summary: 'Restoranni yangilash' })
+@ApiConsumes('multipart/form-data')
 @UseInterceptors(
   FileInterceptor('image', {
     storage: diskStorage({
-      destination: './uploads',
+      destination: './uploads/restaurants',
       filename: (req, file, cb) => {
-        const uniqueSuffix = Date.now() + "-" + Math.round(Math.random() * 1e9);
-        const ext = extname(file.originalname);
-        cb(null, `${uniqueSuffix}${ext}`);
+        const ext = path.extname(file.originalname);
+        const fileName = `${Date.now()}-${Math.round(Math.random() * 1e9)}${ext}`;
+        cb(null, fileName);
       },
     }),
   }),
 )
-@ApiConsumes('multipart/form-data')
-@ApiOperation({ summary: 'Update the restaurant details' })
-async updateRestaurant(
-  @Param('id', ParseUUIDPipe) id: string,
-  @UploadedFile() image: Express.Multer.File,
-  @Body() body: RestaurantCreateDto,
-  req: express.Request,
+
+async update(
+  @Param('id') id: string, // Agar bazada uuid bo‘lsa ParseUUIDPipe ishlatamiz
+  @Body() dto: RestaurantUpdateDto,
+  @UploadedFile() file?: Express.Multer.File,
 ) {
-  let imageUrl: string | undefined;
+  try {
+    let imagePath: string | undefined;
+    if (file) {
+      imagePath = `uploads/restaurants/${file.filename}`; // relative path
+    }
 
-  if (image) {
-    const filePath = `/uploads/${image.filename}`;
-    imageUrl = `${req.protocol}://${req.get('host')}${filePath}`;
+    return await this.restaurantsService.update(id, dto, imagePath);
+  } catch (error) {
+    if (error instanceof NotFoundException) {
+      throw error;
+    }
+    throw new InternalServerErrorException(
+      `Restoran yangilashda xatolik: ${error.message}`,
+    );
   }
-
-  const restaurant = await this.restaurantsService.updateRestaurant(id, body, imageUrl);
-  return plainToInstance(ProductResponseDto, restaurant);
 }
+
+//  @Patch(':id')
+//   @ApiOperation({ summary: 'Restoranni yangilash' })
+//   @ApiConsumes('multipart/form-data')
+//   @ApiResponse({ status: 200, description: 'Restoran muvaffaqiyatli yangilandi' })
+//   @ApiResponse({ status: 404, description: 'Restoran topilmadi' })
+//   @UseInterceptors(
+//     FileInterceptor('image', {
+//       storage: diskStorage({
+//         destination: './uploads/restaurants',
+//         filename: (req, file, cb) => {
+//           const ext = path.extname(file.originalname);
+//           const fileName = `${Date.now()}-${Math.round(Math.random() * 1e9)}${ext}`;
+//           cb(null, fileName);
+//         },
+//       }),
+//     }),
+//   )
+//   async updateRestaurant(
+//     @Param('id') id: string,
+//     @Body() dto: RestaurantUpdateDto,
+//     @UploadedFile() file?: Express.Multer.File,
+//   ) {
+//     try {
+//       let imagePath: string | undefined;
+
+//       if (file) {
+//         imagePath = `/uploads/restaurants/${file.filename}`;
+//       }
+
+//       return await this.restaurantsService.updateRestaurant(id, dto, imagePath);
+//     } catch (error) {
+//       if (error instanceof NotFoundException) {
+//         throw error;
+//       }
+//       console.log(error.message);
+      
+//       throw new InternalServerErrorException(
+//         `Restoran yangilashda xatolik: ${error.message}`,
+//       );
+//     }
+//   }
 
   @Delete(':restaurantId')
   @ApiOperation({ summary: 'Delete a restaurant by id' })
-  async deleteRestaurant(
-    @Param('restaurantId', ParseUUIDPipe) restaurantId: string,
+  async delete(
+    @Param('restaurantId') restaurantId: string,
   ) {
-    return this.restaurantsService.deleteRestaurant(restaurantId);
+    return this.restaurantsService.delete(restaurantId);
   }
 
 }

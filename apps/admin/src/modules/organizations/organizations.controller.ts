@@ -21,12 +21,14 @@ import {
 } from '@nestjs/swagger';
 import {
   CreateOrganizationDto,
+  OrganizationResponseDto,
   UpdateOrganizationDto,
 } from './organizations.dto';
 import { OrganizationService } from './organizations.service';
 import { FileInterceptor } from '@nestjs/platform-express';
 import { diskStorage } from 'multer';
 import { extname } from 'path';
+import { plainToInstance } from 'class-transformer';
 
 @ApiTags('Organizations')
 @Controller('organizations')
@@ -38,16 +40,23 @@ export class OrganizationController {
   @HttpCode(HttpStatus.CREATED)
   @ApiOperation({
     summary: 'Yangi tashkilot qo‘shish',
-    description: 'Yangi tashkilot (organization) qo‘shish uchun ishlatiladi. Fayl (rasm) bilan birga yuboriladi.',
+    description:
+      'Yangi tashkilot (organization) qo‘shish uchun ishlatiladi. Fayl (rasm) bilan birga yuboriladi.',
   })
   @ApiConsumes('multipart/form-data')
-  @ApiBody({ description: 'Yangi organization uchun DTO', type: CreateOrganizationDto })
-  @ApiResponse({ status: 201, description: 'Organization muvaffaqiyatli qo‘shildi' })
+  @ApiBody({
+    description: 'Yangi organization uchun DTO',
+    type: CreateOrganizationDto,
+  })
+  @ApiResponse({
+    status: 201,
+    description: 'Organization muvaffaqiyatli qo‘shildi',
+  })
   @ApiResponse({ status: 400, description: 'Noto‘g‘ri ma’lumot yuborilgan' })
   @UseInterceptors(
     FileInterceptor('image', {
       storage: diskStorage({
-        destination: './uploads/organizations',
+        destination: './uploads/',
         filename: (req, file, cb) => {
           const uniqueSuffix =
             Date.now() + '-' + Math.round(Math.random() * 1e9);
@@ -70,16 +79,28 @@ export class OrganizationController {
   @HttpCode(HttpStatus.OK)
   @ApiOperation({ summary: 'Barcha tashkilotlarni olish' })
   async findAll() {
-    return this.organizationService.findAll();
+    // return this.organizationService.findAll();
+    return plainToInstance(
+      OrganizationResponseDto,
+      this.organizationService.findAll(),
+    );
   }
 
   // 🔹 ID bo‘yicha olish
   @Get(':id')
   @HttpCode(HttpStatus.OK)
   @ApiOperation({ summary: 'Organizationni ID bo‘yicha olish' })
-  @ApiParam({ name: 'id', type: 'string', description: 'Organization ID (UUID)' })
+  @ApiParam({
+    name: 'id',
+    type: 'string',
+    description: 'Organization ID (UUID)',
+  })
   async findOne(@Param('id') id: string) {
-    return this.organizationService.findOne(id);
+    // return this.organizationService.findOne(id);
+    return plainToInstance(
+      OrganizationResponseDto,
+      this.organizationService.findOne(id),
+    );
   }
 
   // 🔹 Yangilash
@@ -88,7 +109,11 @@ export class OrganizationController {
   @ApiOperation({ summary: 'Organizationni yangilash' })
   @ApiConsumes('multipart/form-data')
   @ApiBody({ description: 'Yangilash uchun DTO', type: UpdateOrganizationDto })
-  @ApiParam({ name: 'id', type: 'string', description: 'Organization ID (UUID)' })
+  @ApiParam({
+    name: 'id',
+    type: 'string',
+    description: 'Organization ID (UUID)',
+  })
   @UseInterceptors(FileInterceptor('image'))
   async update(
     @Param('id') id: string,
@@ -103,7 +128,11 @@ export class OrganizationController {
   @Delete(':id')
   @HttpCode(HttpStatus.NO_CONTENT)
   @ApiOperation({ summary: 'Organizationni o‘chirish' })
-  @ApiParam({ name: 'id', type: 'string', description: 'Organization ID (UUID)' })
+  @ApiParam({
+    name: 'id',
+    type: 'string',
+    description: 'Organization ID (UUID)',
+  })
   async remove(@Param('id') id: string) {
     return this.organizationService.remove(id);
   }

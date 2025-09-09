@@ -7,14 +7,14 @@ import {
     ManyToOne,
     Index,
   } from 'typeorm';
-import { ProductEntity } from './product.entity';
+import { ProductEntity } from './products.entity';
 import { DiscountEnum } from '../enums/base.enum';
   
 
 @Entity('prices')
-@Index('unique_last_price_per_product', ['product', 'lastPrice'], {
+@Index('unique_is_current_per_product', ['product', 'isCurrent'], {
   unique: true,
-  where: '"last_price" = true',
+  where: '"is_current" = true',
 })
 export class PriceEntity {
   @PrimaryGeneratedColumn('uuid')
@@ -32,8 +32,8 @@ export class PriceEntity {
   @Column({ type: 'decimal', name: 'discount_value', nullable: true, precision: 10, scale: 2 })
   discountValue: number;
 
-  @Column({ name: 'last_price', default: false })
-  lastPrice: boolean;
+  @Column({ name: 'is_current', default: false })
+  isCurrent: boolean;
 
   @CreateDateColumn({ name: 'created_at' })
   createdAt: Date;
