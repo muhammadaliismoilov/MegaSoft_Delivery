@@ -1,44 +1,8 @@
-// import { BannerEntity, BannerImageEntity, RestaurantEntity } from '@delivery/db/db';
-// import { Injectable } from '@nestjs/common';
-// import { InjectRepository } from '@nestjs/typeorm';
-// import { Repository } from 'typeorm';
-
-
-// @Injectable()
-// export class BannersService {
-//   constructor(
-//      @InjectRepository(BannerEntity)
-//         private readonly bannerRepo: Repository<BannerEntity>,
-//         @InjectRepository(BannerImageEntity)
-//         private readonly bannerImageRepo: Repository<BannerImageEntity>,
-//         @InjectRepository(RestaurantEntity)
-//         private readonly restautrantRepo: Repository<RestaurantEntity>,
-//   ){}
-
-
-//   async findAll(lang?: string) {
-//     const banners = await this.bannerRepo.find({
-//       order: { sequence: 'ASC' },
-//       relations: ['images'],
-//     });
-
-//     if (lang) {
-//       return banners.map(banner => ({
-//         ...banner,
-//         images: banner.images ? banner.images.filter(img => img.lang === lang) : []
-//       }));
-//     }
-//     return banners;
-//   }
-
-// }
-
 
 import { BannerEntity, BannerImageEntity, RestaurantEntity } from '@delivery/db/db';
 import { Injectable, NotFoundException } from '@nestjs/common';
 import { InjectRepository } from '@nestjs/typeorm';
-import { is } from 'date-fns/locale';
-import { log } from 'node:console';
+
 import { Repository } from 'typeorm';
 
 @Injectable()

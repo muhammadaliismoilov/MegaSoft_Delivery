@@ -7,6 +7,8 @@ import { ThrottlerModule } from '@nestjs/throttler';
 import { APP_GUARD } from '@nestjs/core';
 import { BannersModule } from './modules/banners/banners.module';
 import { FoodTypesModule } from './modules/food_types/food_types.module';
+import { RestarantsModule } from './modules/restarants/restarants.module';
+import { ProductsModule } from './modules/products/products.module';
 
 @Module({
   imports: [
@@ -33,7 +35,9 @@ import { FoodTypesModule } from './modules/food_types/food_types.module';
           ]
         }),
         BannersModule,
-        FoodTypesModule
+        FoodTypesModule,
+        RestarantsModule,
+        ProductsModule
          
     
     

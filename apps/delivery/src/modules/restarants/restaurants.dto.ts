@@ -5,8 +5,6 @@ export class RestaurantResponseDto {
 
   name: string;
 
-
-
     @Expose({ name: 'address', toPlainOnly: true })
   address: string;
 }
