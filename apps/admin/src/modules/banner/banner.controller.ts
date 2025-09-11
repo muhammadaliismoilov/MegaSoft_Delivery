@@ -37,7 +37,7 @@ import { extname } from 'path';
     constructor(private readonly bannerService: BannerService) {}
   
     @Get()
-    @ApiOperation({ summary: 'Get all banners' })
+    @ApiOperation({ summary: 'Hamma bannerlarni olish' })
     async get() {
       const banners = await this.bannerService.get();
       return plainToInstance(BannerResponseDto, banners);
@@ -45,21 +45,21 @@ import { extname } from 'path';
 
     
     @Post()
-    @ApiOperation({ summary: 'Create a new banner' })
+    @ApiOperation({ summary: 'Yangi banner yaratish' })
     async create(@Body() body: BannerCreateDTO) {
         const banner = await this.bannerService.create(body);
         return plainToInstance(BannerResponseDto, banner);
     }
     
     @Get(':bannerId')
-    @ApiOperation({ summary: 'Get one banner with its images' })
+    @ApiOperation({ summary: 'Rasmlari bilan bitta bannerni oling' })
     async getOne(@Param('bannerId', ParseUUIDPipe) bannerId: string) {
       const banner = await this.bannerService.getOne(bannerId);
       return plainToInstance(BannerResponseDto, banner);
     }
   
     @Patch(':bannerId')
-    @ApiOperation({ summary: 'Update a banner' })
+    @ApiOperation({ summary: 'Bannerni yangilash' })
     @ApiNoContentResponse()
     async update(
       @Param('bannerId', ParseUUIDPipe)
@@ -90,11 +90,11 @@ import { extname } from 'path';
       ),
     )
     @ApiConsumes('multipart/form-data')
-    @ApiOperation({ summary: 'Upload or update banner images by language' })
+    @ApiOperation({ summary: 'Banner rasmlarini til boʻyicha yuklash yoki yangilash' })
     @ApiBody({
       schema: {
         type: 'object',
-        // required: ['image.uz'],
+        required: ['image.uz'],
         properties: {
           'image.uz': { type: 'string', format: 'binary' },
           'image.ru': { type: 'string', format: 'binary' },
@@ -123,14 +123,14 @@ import { extname } from 'path';
     
   
     @Delete(':id')
-    @ApiOperation({ summary: 'Delete a banner' })
+    @ApiOperation({ summary: 'Bannerni oʻchirish' })
     @ApiNoContentResponse()
     async delete(@Param('id', ParseUUIDPipe) id: string) {
       return this.bannerService.delete(id);
     }
 
     @Post(':id/sequence')
-    @ApiOperation({ summary: 'Update position of banner' })
+    @ApiOperation({ summary: 'Bannerning oʻrnini yangilash' })
     @ApiNoContentResponse()
     async updateSequence(
       @Param('id', ParseUUIDPipe) id: string,

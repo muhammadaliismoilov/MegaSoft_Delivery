@@ -9,6 +9,7 @@ import {
   } from 'typeorm';
 import { BannerImageEntity } from './banner_images.entity';
 import { RestaurantEntity } from './restaurants.entity';
+import { ProductEntity } from './products.entity';
 
 @Entity('banners')
 export class BannerEntity {
@@ -21,7 +22,12 @@ export class BannerEntity {
    @ManyToOne(() => RestaurantEntity, (restaurant) => restaurant.banners, {
     onDelete: 'CASCADE',
   })
-  restaurant: RestaurantEntity;
+  restaurant? : RestaurantEntity;
+
+    @OneToMany(() => ProductEntity, (product) => product.banner, {
+    cascade: true,
+  })
+  products?: ProductEntity[];
 
   @Column({ name: 'is_active', default: true })
   isActive: boolean;

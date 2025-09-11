@@ -3,6 +3,8 @@ import { Injectable, NotFoundException } from '@nestjs/common';
 import { InjectRepository } from '@nestjs/typeorm';
 import { Repository } from 'typeorm';
 import { ProductResponseDto } from './product.dto';
+import { AppConfig } from '../../config/app.config';
+
 
 
 @Injectable()
@@ -10,6 +12,7 @@ export class ProductsService {
   constructor(
     @InjectRepository(ProductEntity)
     private readonly productRepo: Repository<ProductEntity>,
+    private readonly config: AppConfig,
   ) {}
 
   async searchProducts(
@@ -35,16 +38,8 @@ export class ProductsService {
 
     return filtered.map((p) => {
       const op = p.organizationProduct;
-      const title =
-        typeof op.title === 'object'
-          ? op.title[lang] ?? op.title.uz ?? Object.values(op.title)[0]
-          : op.title;
-      const description =
-        typeof op.description === 'object'
-          ? op.description[lang] ??
-            op.description.uz ??
-            Object.values(op.description)[0]
-          : op.description;
+      const title = op.title[lang] ?? op.title[this.config.mainLang]
+      const description =op.description[lang] || op.description[this.config.mainLang]
 
       return {
         id: op.id,

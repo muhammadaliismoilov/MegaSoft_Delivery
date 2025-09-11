@@ -284,7 +284,6 @@ export class BannerService {
           })
           .execute();
       }
-
       banner.sequence = newSeq;
       await this.bannerRepo.save(banner);
     } catch (error) {

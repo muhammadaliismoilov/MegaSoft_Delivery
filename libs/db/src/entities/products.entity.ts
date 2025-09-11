@@ -13,6 +13,7 @@ import { PriceEntity } from './prices.entity';
 import { WeighEntity } from './weighs.entity';
 import { RestaurantEntity } from './restaurants.entity';
 import { OrganizationProductEntity } from './organization_products.entitiy';
+import { BannerEntity } from './banner.entity';
 
 @Entity('products')
 export class ProductEntity {
@@ -50,4 +51,9 @@ export class ProductEntity {
 
   @DeleteDateColumn({ name: 'deleted_at', nullable: true })
   deletedAt?: Date;
+  @ManyToOne(() => BannerEntity, (banner) => banner.products, {
+    onDelete: 'SET NULL',
+    nullable: true,
+  })
+  banner?: BannerEntity;
 }
