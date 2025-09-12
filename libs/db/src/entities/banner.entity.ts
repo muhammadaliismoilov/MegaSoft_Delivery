@@ -1,14 +1,17 @@
 import {
-    Entity,
-    PrimaryGeneratedColumn,
-    Column,
-    CreateDateColumn,
-    UpdateDateColumn,
-    OneToMany,
-    ManyToOne
-  } from 'typeorm';
+  Entity,
+  PrimaryGeneratedColumn,
+  Column,
+  CreateDateColumn,
+  UpdateDateColumn,
+  OneToMany,
+  ManyToOne,
+  JoinColumn,
+} from 'typeorm';
 import { BannerImageEntity } from './banner_images.entity';
 import { RestaurantEntity } from './restaurants.entity';
+import { ProductEntity } from './products.entity';
+import { FoodTypesEntity } from './food_types.entity';
 
 @Entity('banners')
 export class BannerEntity {
@@ -17,11 +20,6 @@ export class BannerEntity {
 
   @Column()
   title: string;
-  
-   @ManyToOne(() => RestaurantEntity, (restaurant) => restaurant.banners, {
-    onDelete: 'CASCADE',
-  })
-  restaurant: RestaurantEntity;
 
   @Column({ name: 'is_active', default: true })
   isActive: boolean;
@@ -43,4 +41,21 @@ export class BannerEntity {
 
   @OneToMany(() => BannerImageEntity, (image) => image.banner)
   images?: BannerImageEntity[];
+
+  @ManyToOne(() => RestaurantEntity, (restaurant) => restaurant.banners, {
+    onDelete: 'CASCADE',
+    nullable: true,
+  })
+  @JoinColumn({ name: 'restaurant_id' })
+  restaurant?: RestaurantEntity;
+
+  @ManyToOne(() => ProductEntity, (product) => product.banner, {
+    nullable: true,
+    onDelete: 'CASCADE', 
+  })
+  @JoinColumn({ name: 'product_id' ,})
+  product?: ProductEntity;
+
+
+
 }

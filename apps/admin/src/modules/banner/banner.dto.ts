@@ -26,6 +26,10 @@ export class BannerResponseDto {
   @IsUUID()
   restaurantId: string;
 
+  @Expose({ name: 'product_id', toPlainOnly: true })
+  @IsUUID()
+  productId: string;
+
   
   @Expose({ name: 'food_id', toPlainOnly: true })
   @IsUUID()
@@ -55,13 +59,20 @@ export class BannerCreateDTO {
   @IsString()
   title: string;
   
-  @ApiProperty({ type: String })
+  @ApiPropertyOptional({ type: String })
   @Expose({ name: 'restaurant_id', toPlainOnly: true })
-  @IsUUID()
-  restaurantId: string;
+ 
+  @IsOptional()
+  restaurantId?: string;
+
+  @ApiPropertyOptional({ type: String })
+  @Expose({ name: 'product_id', toPlainOnly: true })
+  
+  @IsOptional()
+  productId?: string;
 
   @ApiProperty({ type: String })
-  @Expose({ name: 'food_id', toPlainOnly: true })
+  @Expose({ name: 'food_type_id', toPlainOnly: true })
   @IsUUID()
   foodTypeId: string;
 
@@ -72,14 +83,7 @@ export class BannerCreateDTO {
   @Expose({ name: 'is_active', toPlainOnly: true })
   @Type(() => Boolean)
   isActive: boolean = true;
-
-  @ApiProperty({ type: Number, example: 12 })
-  @Expose({ name: 'sequence', toPlainOnly: true })
-  @Type(() => Number)
-  @IsInt()
-  sequence: number;
   
-
   @ApiPropertyOptional({ type: String, format: 'date-time' })
   @Expose({ name: 'start_date', toPlainOnly: true })
   @Type(() => Date)
@@ -109,8 +113,13 @@ export class BannerUpdateDTO {
    @IsOptional()
   restaurantId?: string;
 
+   @ApiProperty({ type: String })
+  @Expose({ name: 'product_id', toPlainOnly: true })
+  @IsOptional()
+  productid?: string;
+
   @ApiProperty({ type: String })
-  @Expose({ name: 'food_id', toPlainOnly: true })
+  @Expose({ name: 'food_type_id', toPlainOnly: true })
   @IsUUID()
   @IsOptional()
   foodTypeId?: string;

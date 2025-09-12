@@ -22,15 +22,13 @@ export class RestaurantEntity {
   @Column()
   name: string;
 
-  @ManyToOne(() => OrganizationEntity, (org) => org.restaurants)
-  organization:OrganizationEntity;
-
+  
   @Column()
   description:string;
-
+  
   @Column()
   address: string;
-
+  
   @Column()
   image: string;
 
@@ -45,22 +43,25 @@ export class RestaurantEntity {
 
   @Column({ type: 'boolean', default: true })
   isOpen: boolean;
-
+  
   @CreateDateColumn({ name: 'created_at' })
   createdAt: Date;
-
+  
   @UpdateDateColumn({ name: 'updated_at' })
   updatedAt: Date;
-
+  
   @OneToMany(() => BannerEntity, (banner) => banner.restaurant)
   banners: BannerEntity[];
-
+  
   @OneToMany(() => ProductEntity, (product) => product.restaurant)
   products: ProductEntity[];
-
+  
   @OneToOne(() => WorkDaysEntity, (workday) => workday.restaurant, {
     cascade: true,
   })
   @JoinColumn() // foreign key restaurants jadvalida bo‘ladi
   workdays: WorkDaysEntity;
+  
+  @ManyToOne(() => OrganizationEntity, (org) => org.restaurants)
+  organization:OrganizationEntity;
 }

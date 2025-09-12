@@ -11,8 +11,8 @@ import {
   BannerSequenceDto,
 } from './banner.dto';
 import { InjectRepository } from '@nestjs/typeorm';
-import { Repository } from 'typeorm';
-import { BannerEntity, BannerImageEntity, FoodTypesEntity, RestaurantEntity } from 'libs/db/src';
+import { Not, Repository } from 'typeorm';
+import { BannerEntity, BannerImageEntity, FoodTypesEntity, ProductEntity, RestaurantEntity } from 'libs/db/src';
 
 @Injectable()
 export class BannerService {
@@ -25,6 +25,8 @@ export class BannerService {
     private readonly restaurantRepo: Repository<RestaurantEntity>,
     @InjectRepository(FoodTypesEntity)
     private readonly foodTypeRepo: Repository<FoodTypesEntity>,
+     @InjectRepository(ProductEntity)
+    private readonly productRepo: Repository<ProductEntity>,
   ) {}
 
   // Get all banners ordered by sequence, with images grouped by language
@@ -71,57 +73,65 @@ export class BannerService {
 
       return { ...banner, images: imagesObj };
     } catch (error) {
-      console.error(error);
-      throw new HttpException(
+      if (error instanceof NotFoundException) throw error;
+      throw new InternalServerErrorException(
         'Internal server error',
-        HttpStatus.INTERNAL_SERVER_ERROR,
+    
       );
     }
   }
 
-  // Create a new banner with auto-incremented sequence
+
+
   async create(dto: BannerCreateDTO) {
-    try {
+  try {
 
-      const restaurant = await this.restaurantRepo.findOneBy({ id: dto.restaurantId });
+    const foodType = await this.foodTypeRepo.findOneBy({ id: dto.foodTypeId });
+    if (!foodType) throw new NotFoundException('Oziq-ovqat turi topilmadi');
+
+    let restaurant: RestaurantEntity | null = null;
+    if (dto.restaurantId) {
+      restaurant = await this.restaurantRepo.findOneBy({ id: dto.restaurantId });
       if (!restaurant) throw new NotFoundException('Restauran topilmadi');
-      
-      const foodType = await this.foodTypeRepo.findOneBy({ id: dto.foodTypeId });
-      if (!foodType) throw new NotFoundException('Oziq-ovqat turi topilmadi');
-      const maxSeq = await this.bannerRepo
-        .createQueryBuilder('banner')
-        .select('MAX(banner.sequence)', 'max')
-        .getRawOne<{ max: number }>();
-
-      const sequence = (maxSeq?.max || 0) + 1;
- 
-      // Convert dates to string or undefined
-      const startDate = dto.startDate
-        ? dto.startDate.toISOString().split('T')[0]
-        : null;
-      const endDate = dto.endDate
-        ? dto.endDate.toISOString().split('T')[0]
-        : null;
-
-      const banner = this.bannerRepo.create({
-        title: dto.title,
-        isActive: dto.isActive ?? true,
-        restaurant,
-        foodType,
-        sequence,
-        startDate,
-        endDate,
-      } as Partial<BannerEntity>);
-
-      return this.bannerRepo.save(banner);
-    } catch (error) {
-      console.error(error);
-      throw new HttpException(
-        'Internal server error',
-        HttpStatus.INTERNAL_SERVER_ERROR,
-      );
     }
+
+    let product: ProductEntity | null = null;
+    if (dto.productId) {
+      product = await this.productRepo.findOneBy({ id: dto.productId });
+      if (!product) throw new NotFoundException('Mahsulot topilmadi');
+    }
+
+    const maxSeq = await this.bannerRepo
+      .createQueryBuilder('banner')
+      .select('MAX(banner.sequence)', 'max')
+      .getRawOne<{ max: number }>();
+    const sequence = (maxSeq?.max || 0) + 1;
+
+    const startDate = dto.startDate ? dto.startDate.toISOString().split('T')[0] : null;
+    const endDate = dto.endDate ? dto.endDate.toISOString().split('T')[0] : null;
+
+    const isActive = dto.isActive ?? true;
+    const currentDate = new Date().toISOString().split('T')[0];
+    const finalIsActive = endDate && endDate < currentDate ? false : isActive;
+
+    const banner = this.bannerRepo.create({
+      title: dto.title,
+      isActive: finalIsActive,
+      restaurant,
+      foodType,
+      product,
+      sequence,
+      startDate,
+      endDate,
+    } as Partial<BannerEntity>);
+
+    return this.bannerRepo.save(banner);
+  } catch (error) {
+    console.error(error);
+     if (error instanceof NotFoundException) throw error;
+    throw new InternalServerErrorException('Ichki server xatosi');
   }
+}
 
   // Update a banner
   async update(bannerId: string, dto: BannerUpdateDTO) {
@@ -134,9 +144,10 @@ export class BannerService {
       return this.bannerRepo.save(banner);
     } catch (error) {
       console.error(error);
-      throw new HttpException(
+       if (error instanceof NotFoundException) throw error;
+      throw new InternalServerErrorException(
         'Internal server error',
-        HttpStatus.INTERNAL_SERVER_ERROR,
+        
       );
     }
   }
@@ -158,9 +169,10 @@ export class BannerService {
         .execute();
     } catch (error) {
       console.error(error);
-      throw new HttpException(
+       if (error instanceof NotFoundException) throw error;
+      throw new InternalServerErrorException(
         'Internal server error',
-        HttpStatus.INTERNAL_SERVER_ERROR,
+    
       );
     }
   }
@@ -284,7 +296,6 @@ export class BannerService {
           })
           .execute();
       }
-
       banner.sequence = newSeq;
       await this.bannerRepo.save(banner);
     } catch (error) {

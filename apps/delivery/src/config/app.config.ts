@@ -1,3 +1,4 @@
+import { LanguageTypeEnum } from "@delivery/db/db/enums/base.enum";
 import { Configuration, Value } from "@itgorillaz/configify";
 import { Transform } from "class-transformer";
 import { IsNotEmpty, IsString } from "class-validator";
@@ -38,4 +39,10 @@ export class AppConfig {
   @IsNotEmpty()
   @Value('DB_PORT')
   dbPort: number;
+
+  @IsString()
+  @IsNotEmpty()
+  @Value('MAIN_LANG')
+  mainLang: LanguageTypeEnum = LanguageTypeEnum.Uz;
+
 }
