@@ -1,61 +1,61 @@
-import { Expose, Transform } from 'class-transformer';
-import { format } from 'date-fns';
+import { ApiProperty } from '@nestjs/swagger';
+import { Expose } from 'class-transformer';
+
+class BannerImageResponseDto {
+  @ApiProperty({ example: 'uz', description: 'Tasvir tili' })
+  lang: string;
+ 
+  @ApiProperty({ example: 'http://example.com/image.jpg', description: 'Tasvir URL' })
+  path: string;
+
+}
 
 export class BannerResponseDto {
+  @ApiProperty({ example: 'uuid-string', description: 'Banner ID' })
   @Expose()
-  id: string;
+  bannerId: string;
 
-  restarant_id: string;
+  @ApiProperty({ example: 'uuid-string-or-null', description: 'Restoran ID (ixtiyoriy)' })
+  @Expose()
+  restaurantId: string | null;
 
+  @ApiProperty({ example: 'uuid-string-or-null', description: 'Mahsulot ID (ixtiyoriy)' })
+  @Expose()
+  productId: string | null;
+
+  @ApiProperty({ example: 'Banner Title', description: 'Banner sarlavhasi' })
+  @Expose()
   title: string;
 
+  @ApiProperty({ example: true, description: 'Banner faol holati' })
+  @Expose()
   isActive: boolean;
 
+  @ApiProperty({ example: '2025-09-12 15:30:00', description: 'Boshlanish sanasi' })
+  @Expose()
+  startDate: string | null;
+
+  @ApiProperty({ example: '2025-09-15 23:59:59', description: 'Tugash sanasi' })
+  @Expose()
+  endDate: string | null;
+
+  @ApiProperty({ example: 1, description: 'Tartib raqami' })
+  @Expose()
   sequence: number;
 
-  imageId: string | null;
-
-  lang: string | null;
-
-  path: string | null;
-
+  @ApiProperty({ example: '2025-09-12T11:42:55.965Z', description: 'Yaratilgan vaqt' })
   @Expose()
-  @Transform(
-    ({ value }) =>
-      value !== null && value !== undefined ? Number(value).toFixed(2) : null,
-    { toPlainOnly: true },
-  )
-  distance: number;
+  createdAt: string;
 
+  @ApiProperty({ example: '2025-09-12T11:42:55.965Z', description: 'Yangilangan vaqt' })
   @Expose()
-  @Transform(
-    ({ value }) =>
-      value ? format(new Date(value), 'yyyy-MM-dd HH:mm:ss') : null,
-    { toPlainOnly: true },
-  )
-  startDate: Date;
+  updatedAt: string;
 
+  @ApiProperty({ example: 2.345, description: 'Masofa (km)', nullable: true })
   @Expose()
-  @Transform(
-    ({ value }) =>
-      value ? format(new Date(value), 'yyyy-MM-dd HH:mm:ss') : null,
-    { toPlainOnly: true },
-  )
-  endDate: Date;
+  distance: number | null;
 
+  @ApiProperty({ type: [BannerImageResponseDto], description: 'Banner tasvirlari' })
   @Expose()
-  @Transform(
-    ({ value }) =>
-      value ? format(new Date(value), 'yyyy-MM-dd HH:mm:ss') : null,
-    { toPlainOnly: true },
-  )
-  createdAt: Date;
-
-  @Expose()
-  @Transform(
-    ({ value }) =>
-      value ? format(new Date(value), 'yyyy-MM-dd HH:mm:ss') : null,
-    { toPlainOnly: true },
-  )
-  updatedAt: Date;
+  images: BannerImageResponseDto[];
 }

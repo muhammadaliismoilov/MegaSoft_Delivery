@@ -37,6 +37,7 @@ import { extname } from 'path';
     constructor(private readonly bannerService: BannerService) {}
   
     @Get()
+    @UseInterceptors(ClassSerializerInterceptor)
     @ApiOperation({ summary: 'Hamma bannerlarni olish' })
     async get() {
       const banners = await this.bannerService.get();
@@ -45,6 +46,7 @@ import { extname } from 'path';
 
     
     @Post()
+    @UseInterceptors(ClassSerializerInterceptor)
     @ApiOperation({ summary: 'Yangi banner yaratish' })
     async create(@Body() body: BannerCreateDTO) {
         const banner = await this.bannerService.create(body);
@@ -52,6 +54,7 @@ import { extname } from 'path';
     }
     
     @Get(':bannerId')
+    @UseInterceptors(ClassSerializerInterceptor)
     @ApiOperation({ summary: 'Rasmlari bilan bitta bannerni oling' })
     async getOne(@Param('bannerId', ParseUUIDPipe) bannerId: string) {
       const banner = await this.bannerService.getOne(bannerId);

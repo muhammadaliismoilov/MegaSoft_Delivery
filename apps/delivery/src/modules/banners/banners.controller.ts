@@ -19,26 +19,20 @@ import { plainToInstance } from 'class-transformer';
 export class BannersController {
   constructor(private readonly bannersService: BannersService) {}
 
-  @Get('nearby')
+  @Get()
   @HttpCode(HttpStatus.OK)
   @ApiOperation({ summary: 'Foydalanuvchiga eng yaqin bannerlarni olish' })
   @ApiQuery({ name: 'lat', type: Number, default: 41.551047 })
   @ApiQuery({ name: 'lng', type: Number, default: 60.605701 })
   @ApiQuery({ name: 'lang', type: String, required: false, example: 'uz' })
   @ApiOkResponse({ type: [BannerResponseDto] })
-  async getNearbyBanners(
+  async getBanners(
     @Query('lat') lat: number,
     @Query('lng') lng: number,
     @Query('lang') lang?: string,
   ) {
     const banners = await this.bannersService.find(lat, lng, lang);
-
-    if (!banners.length) {
-      throw new NotFoundException('2000 metr radiusda restoran topilmadi');
-    }
-
-    return plainToInstance(BannerResponseDto, banners);
-   
+    return plainToInstance(BannerResponseDto, banners)
   }
 }
 
