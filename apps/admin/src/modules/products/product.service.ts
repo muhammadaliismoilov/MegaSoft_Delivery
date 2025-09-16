@@ -300,6 +300,9 @@ import {
 } from 'libs/db/src';
 import { InjectRepository } from '@nestjs/typeorm';
 import { DataSource, Repository } from 'typeorm';
+import { TYPESENSE_COLLECTIONS } from 'apps/delivery/src/typesense/typesens.constants';
+
+import { TypesenseService } from '../../../../delivery/src/typesense/typesens.service';
 
 @Injectable()
 export class ProductService {
@@ -315,6 +318,7 @@ export class ProductService {
     @InjectRepository(OrganizationProductEntity)
     private readonly orgProductRepo: Repository<OrganizationProductEntity>,
     private readonly dataSource: DataSource,
+    private readonly typesense: TypesenseService,
   ) {}
 
   // 🔵 Barcha productlarni olish
@@ -349,169 +353,374 @@ export class ProductService {
     }
   }
 
+  // // 🟢 Yangi product qo‘shish
+  // async create(dto: ProductCreateDto) {
+  //   const {
+  //     price,
+  //     weighs,
+  //     discountType,
+  //     discountValue,
+  //     restaurant_id,
+  //     organization_product_id,
+  //     ...rest
+  //   } = dto;
+
+  //   try {
+  //     const restaurant = await this.restaurantRepo.findOne({
+  //       where: { id: restaurant_id },
+  //     });
+  //     if (!restaurant) {
+  //       throw new BadRequestException(
+  //         `Bunday restaurant_id (${restaurant_id}) mavjud emas`,
+  //       );
+  //     }
+
+  //     const orgProduct = await this.orgProductRepo.findOne({
+  //       where: { id: organization_product_id },
+  //     });
+  //     if (!orgProduct) {
+  //       throw new BadRequestException(
+  //         `Bunday organization_product_id (${organization_product_id}) mavjud emas`,
+  //       );
+  //     }
+
+  //     return await this.dataSource.transaction(async (manager) => {
+  //       // 1️⃣ Yangi product yaratish
+  //       const newProduct = manager.create(ProductEntity, {
+  //         ...rest,
+  //         restaurant: { id: restaurant_id } as any,
+  //         organizationProduct: { id: organization_product_id } as any,
+  //       });
+  //       const savedProduct = await manager.save(ProductEntity, newProduct);
+
+  //       if (!savedProduct) {
+  //         throw new BadRequestException('Yangi product yaratib bo‘lmadi');
+  //       }
+
+  //       // 2️⃣ Weigh qo‘shish
+  //       if (Array.isArray(weighs) && weighs.length > 0) {
+  //         const weighEntities = weighs.map((w) =>
+  //           manager.create(WeighEntity, { product: savedProduct, weigh: w }),
+  //         );
+  //         await manager.save(WeighEntity, weighEntities);
+  //       }
+
+  //       // 3️⃣ Narx qo‘shish
+  //       const initialPrice = manager.create(PriceEntity, {
+  //         product: savedProduct,
+  //         price,
+  //         discountType,
+  //         discountValue,
+  //         isCurrent: true,
+  //       });
+  //       await manager.save(PriceEntity, initialPrice);
+
+  //       // 4️⃣ Yaratilgan productni qaytarish
+  //       return manager.findOne(ProductEntity, {
+  //         where: { id: savedProduct.id },
+  //         relations: ['prices', 'weighs', 'restaurant', 'organizationProduct'],
+  //       });
+  //     });
+  //   } catch (error) {
+  //     if (error instanceof BadRequestException) throw error;
+  //     console.error('createProduct error:', error);
+  //     throw new InternalServerErrorException('Serverda xatolik yuz berdi');
+  //   }
+  // }
+
+  // // 🟠 Product yangilash
+  // async update(productId: string, dto: UpdateProductDto) {
+  //   try {
+  //     return await this.dataSource.transaction(async (manager) => {
+  //       const { price, weighs, discountType, discountValue, ...details } = dto;
+
+  //       // Productni topamiz
+  //       const product = await manager.findOne(ProductEntity, {
+  //         where: { id: productId },
+  //         relations: ['prices', 'weighs'],
+  //       });
+  //       if (!product) {
+  //         throw new NotFoundException(`Product id:${productId} topilmadi`);
+  //       }
+
+  //       // Oddiy maydonlarni yangilash
+  //       Object.entries(details).forEach(([key, value]) => {
+  //         if (value !== undefined) {
+  //           (product as any)[key] = value;
+  //         }
+  //       });
+  //       await manager.save(ProductEntity, product);
+
+  //       // Narx yangilash
+  //       if (
+  //         price !== undefined ||
+  //         discountType !== undefined ||
+  //         discountValue !== undefined
+  //       ) {
+  //         await manager.update(
+  //           PriceEntity,
+  //           { product: { id: productId }, isCurrent: true },
+  //           { isCurrent: false },
+  //         );
+
+  //         const newPrice = manager.create(PriceEntity, {
+  //           product,
+  //           price: price ?? product.prices?.[0]?.price,
+  //           discountType: discountType ?? product.prices?.[0]?.discountType,
+  //           discountValue: discountValue ?? product.prices?.[0]?.discountValue,
+  //           isCurrent: true,
+  //         });
+  //         await manager.save(PriceEntity, newPrice);
+  //       }
+
+  //       // Weighs yangilash
+  //       if (weighs !== undefined) {
+  //         await manager.delete(WeighEntity, { product: { id: productId } });
+  //         if (weighs.length > 0) {
+  //           const newWeighs = weighs.map((w) =>
+  //             manager.create(WeighEntity, { product, weigh: w }),
+  //           );
+  //           await manager.save(WeighEntity, newWeighs);
+  //         }
+  //       }
+
+  //       return manager.findOne(ProductEntity, {
+  //         where: { id: productId },
+  //         relations: ['prices', 'weighs'],
+  //       });
+  //     });
+  //   } catch (error) {
+  //     console.error('updateProduct error:', error);
+  //     if (error instanceof NotFoundException) throw error;
+  //     throw new InternalServerErrorException(
+  //       'Mahsulotni yangilashda server xatosi yuz berdi',
+  //     );
+  //   }
+  // }
+
+  // // 🔴 Productni soft delete qilish
+  // async delete(productId: string) {
+  //   try {
+  //     const result = await this.productRepo.softDelete(productId);
+
+  //     if (result.affected === 0) {
+  //       throw new NotFoundException(`Product id:${productId} topilmadi`);
+  //     }
+
+  //     return { message: `Product id:${productId} muvaffaqiyatli soft delete qilindi` };
+  //   } catch (error) {
+  //     console.error(error);
+  //     if (error instanceof NotFoundException) throw error;
+  //     throw new InternalServerErrorException('Server xatosi yuz berdi');
+  //   }
+  // }
+
+  // 🔄 Soft delete qilingan productni qayta tiklash
+
   // 🟢 Yangi product qo‘shish
-  async create(dto: ProductCreateDto) {
-    const {
-      price,
-      weighs,
-      discountType,
-      discountValue,
-      restaurant_id,
-      organization_product_id,
-      ...rest
-    } = dto;
+async create(dto: ProductCreateDto) {
+  const {
+    price,
+    weighs,
+    discountType,
+    discountValue,
+    restaurant_id,
+    organization_product_id,
+    ...rest
+  } = dto;
 
-    try {
-      const restaurant = await this.restaurantRepo.findOne({
-        where: { id: restaurant_id },
-      });
-      if (!restaurant) {
-        throw new BadRequestException(
-          `Bunday restaurant_id (${restaurant_id}) mavjud emas`,
-        );
-      }
-
-      const orgProduct = await this.orgProductRepo.findOne({
-        where: { id: organization_product_id },
-      });
-      if (!orgProduct) {
-        throw new BadRequestException(
-          `Bunday organization_product_id (${organization_product_id}) mavjud emas`,
-        );
-      }
-
-      return await this.dataSource.transaction(async (manager) => {
-        // 1️⃣ Yangi product yaratish
-        const newProduct = manager.create(ProductEntity, {
-          ...rest,
-          restaurant: { id: restaurant_id } as any,
-          organizationProduct: { id: organization_product_id } as any,
-        });
-        const savedProduct = await manager.save(ProductEntity, newProduct);
-
-        if (!savedProduct) {
-          throw new BadRequestException('Yangi product yaratib bo‘lmadi');
-        }
-
-        // 2️⃣ Weigh qo‘shish
-        if (Array.isArray(weighs) && weighs.length > 0) {
-          const weighEntities = weighs.map((w) =>
-            manager.create(WeighEntity, { product: savedProduct, weigh: w }),
-          );
-          await manager.save(WeighEntity, weighEntities);
-        }
-
-        // 3️⃣ Narx qo‘shish
-        const initialPrice = manager.create(PriceEntity, {
-          product: savedProduct,
-          price,
-          discountType,
-          discountValue,
-          isCurrent: true,
-        });
-        await manager.save(PriceEntity, initialPrice);
-
-        // 4️⃣ Yaratilgan productni qaytarish
-        return manager.findOne(ProductEntity, {
-          where: { id: savedProduct.id },
-          relations: ['prices', 'weighs', 'restaurant', 'organizationProduct'],
-        });
-      });
-    } catch (error) {
-      if (error instanceof BadRequestException) throw error;
-      console.error('createProduct error:', error);
-      throw new InternalServerErrorException('Serverda xatolik yuz berdi');
-    }
-  }
-
-  // 🟠 Product yangilash
-  async update(productId: string, dto: UpdateProductDto) {
-    try {
-      return await this.dataSource.transaction(async (manager) => {
-        const { price, weighs, discountType, discountValue, ...details } = dto;
-
-        // Productni topamiz
-        const product = await manager.findOne(ProductEntity, {
-          where: { id: productId },
-          relations: ['prices', 'weighs'],
-        });
-        if (!product) {
-          throw new NotFoundException(`Product id:${productId} topilmadi`);
-        }
-
-        // Oddiy maydonlarni yangilash
-        Object.entries(details).forEach(([key, value]) => {
-          if (value !== undefined) {
-            (product as any)[key] = value;
-          }
-        });
-        await manager.save(ProductEntity, product);
-
-        // Narx yangilash
-        if (
-          price !== undefined ||
-          discountType !== undefined ||
-          discountValue !== undefined
-        ) {
-          await manager.update(
-            PriceEntity,
-            { product: { id: productId }, isCurrent: true },
-            { isCurrent: false },
-          );
-
-          const newPrice = manager.create(PriceEntity, {
-            product,
-            price: price ?? product.prices?.[0]?.price,
-            discountType: discountType ?? product.prices?.[0]?.discountType,
-            discountValue: discountValue ?? product.prices?.[0]?.discountValue,
-            isCurrent: true,
-          });
-          await manager.save(PriceEntity, newPrice);
-        }
-
-        // Weighs yangilash
-        if (weighs !== undefined) {
-          await manager.delete(WeighEntity, { product: { id: productId } });
-          if (weighs.length > 0) {
-            const newWeighs = weighs.map((w) =>
-              manager.create(WeighEntity, { product, weigh: w }),
-            );
-            await manager.save(WeighEntity, newWeighs);
-          }
-        }
-
-        return manager.findOne(ProductEntity, {
-          where: { id: productId },
-          relations: ['prices', 'weighs'],
-        });
-      });
-    } catch (error) {
-      console.error('updateProduct error:', error);
-      if (error instanceof NotFoundException) throw error;
-      throw new InternalServerErrorException(
-        'Mahsulotni yangilashda server xatosi yuz berdi',
+  try {
+    const restaurant = await this.restaurantRepo.findOne({
+      where: { id: restaurant_id },
+    });
+    if (!restaurant) {
+      throw new BadRequestException(
+        `Bunday restaurant_id (${restaurant_id}) mavjud emas`,
       );
     }
+
+    const orgProduct = await this.orgProductRepo.findOne({
+      where: { id: organization_product_id },
+    });
+    if (!orgProduct) {
+      throw new BadRequestException(
+        `Bunday organization_product_id (${organization_product_id}) mavjud emas`,
+      );
+    }
+
+    return await this.dataSource.transaction(async (manager) => {
+      // 1️⃣ Yangi product yaratish
+      const newProduct = manager.create(ProductEntity, {
+        ...rest,
+        restaurant: { id: restaurant_id } as any,
+        organizationProduct: { id: organization_product_id } as any,
+      });
+      const savedProduct = await manager.save(ProductEntity, newProduct);
+
+      if (!savedProduct) {
+        throw new BadRequestException('Yangi product yaratib bo‘lmadi');
+      }
+
+      // 2️⃣ Weigh qo‘shish
+      if (Array.isArray(weighs) && weighs.length > 0) {
+        const weighEntities = weighs.map((w) =>
+          manager.create(WeighEntity, { product: savedProduct, weigh: w }),
+        );
+        await manager.save(WeighEntity, weighEntities);
+      }
+
+      // 3️⃣ Narx qo‘shish
+      const initialPrice = manager.create(PriceEntity, {
+        product: savedProduct,
+        price,
+        discountType,
+        discountValue,
+        isCurrent: true,
+      });
+      await manager.save(PriceEntity, initialPrice);
+
+      // 4️⃣ Productni qaytarish
+      const result = await manager.findOne(ProductEntity, {
+        where: { id: savedProduct.id },
+        relations: ['prices', 'weighs', 'restaurant', 'organizationProduct'],
+      });
+
+      // ✅ Typesense'ga sync
+      if (result) {
+        await this.typesense.addDocument(
+          TYPESENSE_COLLECTIONS.PRODUCTS,
+          {
+            id: result.id,
+            title_uz: result.organizationProduct.title?.uz ?? '',
+            title_ru: result.organizationProduct.title?.ru ?? '',
+            title_en: result.organizationProduct.title?.en ?? '',
+            description_uz: result.organizationProduct.description?.uz ?? '',
+            description_ru: result.organizationProduct.description?.ru ?? '',
+            description_en: result.organizationProduct.description?.en ?? '',
+            price: result.prices?.[0]?.price ?? 0,
+            restaurantId: result.restaurant.id,
+            restaurantName: result.restaurant.name,
+          },
+        );
+      }
+
+      return result;
+    });
+  } catch (error) {
+    if (error instanceof BadRequestException) throw error;
+    console.error('createProduct error:', error);
+    throw new InternalServerErrorException('Serverda xatolik yuz berdi');
   }
+}
 
-  // 🔴 Productni soft delete qilish
-  async delete(productId: string) {
-    try {
-      const result = await this.productRepo.softDelete(productId);
+// 🟠 Product yangilash
+async update(productId: string, dto: UpdateProductDto) {
+  try {
+    return await this.dataSource.transaction(async (manager) => {
+      const { price, weighs, discountType, discountValue, ...details } = dto;
 
-      if (result.affected === 0) {
+      const product = await manager.findOne(ProductEntity, {
+        where: { id: productId },
+        relations: ['prices', 'weighs', 'restaurant', 'organizationProduct'],
+      });
+      if (!product) {
         throw new NotFoundException(`Product id:${productId} topilmadi`);
       }
 
-      return { message: `Product id:${productId} muvaffaqiyatli soft delete qilindi` };
-    } catch (error) {
-      console.error(error);
-      if (error instanceof NotFoundException) throw error;
-      throw new InternalServerErrorException('Server xatosi yuz berdi');
-    }
-  }
+      Object.entries(details).forEach(([key, value]) => {
+        if (value !== undefined) {
+          (product as any)[key] = value;
+        }
+      });
+      await manager.save(ProductEntity, product);
 
-  // 🔄 Soft delete qilingan productni qayta tiklash
+      if (
+        price !== undefined ||
+        discountType !== undefined ||
+        discountValue !== undefined
+      ) {
+        await manager.update(
+          PriceEntity,
+          { product: { id: productId }, isCurrent: true },
+          { isCurrent: false },
+        );
+
+        const newPrice = manager.create(PriceEntity, {
+          product,
+          price: price ?? product.prices?.[0]?.price,
+          discountType: discountType ?? product.prices?.[0]?.discountType,
+          discountValue: discountValue ?? product.prices?.[0]?.discountValue,
+          isCurrent: true,
+        });
+        await manager.save(PriceEntity, newPrice);
+      }
+
+      if (weighs !== undefined) {
+        await manager.delete(WeighEntity, { product: { id: productId } });
+        if (weighs.length > 0) {
+          const newWeighs = weighs.map((w) =>
+            manager.create(WeighEntity, { product, weigh: w }),
+          );
+          await manager.save(WeighEntity, newWeighs);
+        }
+      }
+
+      const result = await manager.findOne(ProductEntity, {
+        where: { id: productId },
+        relations: ['prices', 'weighs', 'restaurant', 'organizationProduct'],
+      });
+
+      // ✅ Typesense update
+      if (result) {
+        await this.typesense.addDocument(
+          TYPESENSE_COLLECTIONS.PRODUCTS,
+          {
+            id: result.id,
+            title_uz: result.organizationProduct.title?.uz ?? '',
+            title_ru: result.organizationProduct.title?.ru ?? '',
+            title_en: result.organizationProduct.title?.en ?? '',
+            description_uz: result.organizationProduct.description?.uz ?? '',
+            description_ru: result.organizationProduct.description?.ru ?? '',
+            description_en: result.organizationProduct.description?.en ?? '',
+            price: result.prices?.[0]?.price ?? 0,
+            restaurantId: result.restaurant.id,
+            restaurantName: result.restaurant.name,
+          },
+        );
+      }
+
+      return result;
+    });
+  } catch (error) {
+    console.error('updateProduct error:', error);
+    if (error instanceof NotFoundException) throw error;
+    throw new InternalServerErrorException(
+      'Mahsulotni yangilashda server xatosi yuz berdi',
+    );
+  }
+}
+
+// 🔴 Productni soft delete qilish
+async delete(productId: string) {
+  try {
+    const result = await this.productRepo.softDelete(productId);
+
+    if (result.affected === 0) {
+      throw new NotFoundException(`Product id:${productId} topilmadi`);
+    }
+
+    // ✅ Typesense delete
+    await this.typesense.deleteDocument(TYPESENSE_COLLECTIONS.PRODUCTS, productId);
+
+    return { message: `Product id:${productId} muvaffaqiyatli soft delete qilindi` };
+  } catch (error) {
+    console.error(error);
+    if (error instanceof NotFoundException) throw error;
+    throw new InternalServerErrorException('Server xatosi yuz berdi');
+  }
+}
+
+
   async restore(productId: string) {
     try {
       const result = await this.productRepo.restore(productId);

@@ -1,0 +1,16 @@
+services:
+  typesense:
+    image: typesense/typesense:0.25.2
+    container_name: delivery_typesense
+    restart: always
+    ports:
+      - "8108:8108"
+    volumes:
+      - typesense_data:/data
+    command: >
+      --data-dir /data
+      --api-key=xyz
+      --listen-port 8108
+
+volumes:
+  typesense_data:

@@ -24,7 +24,12 @@ export class ProductPriceDto {
   @IsNumber()
   price: number;
 
-  @ApiPropertyOptional()
+   @ApiPropertyOptional({
+    enum: DiscountEnum,
+    enumName: 'DiscountEnum', 
+    description: 'Chegirma turi: percent yoki amount',
+    example: DiscountEnum.PERCENTAGE,
+  })
   @IsEnum(DiscountEnum)
   discountType?: string;
 

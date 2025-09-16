@@ -1,19 +1,14 @@
 import {
   Controller,
   Get,
-  Post,
-  Body,
-  Patch,
   Param,
-  Delete,
   ParseUUIDPipe,
   Query,
   NotFoundException,
-  HttpStatus,
+
 } from '@nestjs/common';
 import { RestarantsService } from './restarants.service';
 import {
-  ApiOkResponse,
   ApiOperation,
   ApiQuery,
   ApiResponse,
@@ -54,37 +49,34 @@ export class RestarantsController {
   }
 
   @Get(':id/products')
-  @ApiOperation({
-    summary: 'Restorandagi mahsulotlarni olish',
-    description:
-      'Berilgan restoranga tegishli barcha mahsulotlarni qaytaradi. `lang` query param orqali tilni tanlash mumkin (`uz`, `ru`, `en`).',
-  })
-  @ApiQuery({
-    name: 'lang',
-    description: 'Til kodi (`uz`, `ru`, `en`), default = `uz`',
-    required: false,
-    example: 'ru',
-  })
-  @ApiResponse({
-    status: 200,
-    description: 'Mahsulotlar muvaffaqiyatli qaytarildi',
-  })
-  @ApiResponse({
-    status: 404,
-    description: 'Restoran topilmadi yoki mahsulotlar mavjud emas',
-  })
-  async findProducts(
-    @Param('id', new ParseUUIDPipe()) id: string,
-    @Query('lang') lang: 'uz' | 'ru' | 'en' = 'uz',
-  ) {
-    const products = await this.restarantsService.findProducts(id, lang);
+@ApiOperation({
+  summary: 'Restorandagi mahsulotlarni olish',
+  description:
+    'Berilgan restoranga tegishli barcha mahsulotlarni qaytaradi. `lang` query param orqali tilni tanlash mumkin (`uz`, `ru`, `en`).',
+})
+@ApiQuery({
+  name: 'title',
+  description: 'Mahsulot nomi bo‘yicha qidirish (ixtiyoriy)',
+  required: false,
+  example: 'Lavash',
+})
+@ApiQuery({
+  name: 'lang',
+  description: 'Til kodi (`uz`, `ru`, `en`), default = `uz`',
+  required: false,
+  example: '',
+})
 
-    if (!products || products.length === 0) {
-      throw new NotFoundException('Mahsulotlar topilmadi');
-    }
+async findProducts(
+  @Param('id', new ParseUUIDPipe()) id: string, // ✅ majburiy
+  @Query('title') title?: string,               // ✅ optional
+  @Query('lang') lang: 'uz' | 'ru' | 'en' = 'uz', // ✅ default uz
+) {
+  const products = await this.restarantsService.findProducts(id, title, lang);
 
-    return {
-      data: products,
-    };
-  }
+  return {
+    data: products,
+  };
+}
+
 }

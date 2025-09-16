@@ -20,7 +20,7 @@ export class OrganizationProductEntity {
 
   @ManyToOne(() => FoodTypesEntity, { nullable: true })
   @JoinColumn({ name: 'food_id' })
-  food_id: FoodTypesEntity;
+  food_type_id: FoodTypesEntity;
 
   @ManyToOne(() => OrganizationEntity, (organization) => organization.id, {
     onDelete: 'CASCADE',

@@ -17,6 +17,6 @@ export class FoodTypesService {
   }
 
   async findOne(id: string) {
-    return this.foodTypesRepo.findOne({where:{id}});
+    return this.foodTypesRepo.findOne({where:{id}, relations : ['organizationProduct']});
   }
 }

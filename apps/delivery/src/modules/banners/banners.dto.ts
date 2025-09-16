@@ -43,13 +43,13 @@ export class BannerResponseDto {
   @Expose()
   sequence: number;
 
-  @ApiProperty({ example: '2025-09-12T11:42:55.965Z', description: 'Yaratilgan vaqt' })
-  @Expose()
-  createdAt: string;
+  // @ApiProperty({ example: '2025-09-12T11:42:55.965Z', description: 'Yaratilgan vaqt' })
+  // @Expose()
+  // createdAt: string;
 
-  @ApiProperty({ example: '2025-09-12T11:42:55.965Z', description: 'Yangilangan vaqt' })
-  @Expose()
-  updatedAt: string;
+  // @ApiProperty({ example: '2025-09-12T11:42:55.965Z', description: 'Yangilangan vaqt' })
+  // @Expose()
+  // updatedAt: string;
 
   @ApiProperty({ example: 2.345, description: 'Masofa (km)', nullable: true })
   @Expose()

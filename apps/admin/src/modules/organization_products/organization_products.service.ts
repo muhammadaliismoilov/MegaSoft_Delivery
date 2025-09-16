@@ -65,7 +65,7 @@ export class OrganizationProductsService {
 
       const product = this.orgProdRepository.create({
         ...dto,
-        food_id: food,
+        food_type_id: food,
         organization_id: organization,
       });
 
@@ -134,7 +134,7 @@ export class OrganizationProductsService {
           where: { id: dto.food_type_id },
         });
         if (!food) throw new BadRequestException('Food type topilmadi');
-        product.food_id = food;
+        product.food_type_id = food;
       }
 
       if (dto.organization_id) {

@@ -71,13 +71,20 @@ export class BannersService {
           'banner.startDate AS "startDate"',
           'banner.endDate AS "endDate"',
           'banner.sequence AS "sequence"',
-          'banner.createdAt AS "createdAt"',
-          'banner.updatedAt AS "updatedAt"',
+          // 'banner.createdAt AS "createdAt"',
+          // 'banner.updatedAt AS "updatedAt"',
           `${distanceExpr} AS "distance"`,
         ])
         .addSelect(['images.lang', 'images.path'])
         .where('banner.isActive = :isActive', { isActive: true })
-        .where('restaurant.isOpen = :isOpen', { isOpen: true })
+        .andWhere(
+          `
+          (
+            (restaurant.id IS NOT NULL AND restaurant.isOpen = true)
+            OR (product.id IS NOT NULL)
+          )
+        `,
+        )
         .andWhere(`(${distanceExpr} <= :radius OR ${distanceExpr} IS NULL)`)
         .setParameters({
           lat: userLat,
@@ -86,6 +93,7 @@ export class BannersService {
         });
 
       const entities = await query.getRawMany();
+
       if (!entities || entities.length === 0) {
         throw new NotFoundException('Hech qanday banner topilmadi');
       }

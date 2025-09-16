@@ -8,9 +8,11 @@ import {
   Inject,
   Injectable,
   InternalServerErrorException,
+  NotFoundException,
 } from '@nestjs/common';
 import { InjectRepository } from '@nestjs/typeorm';
 import { Repository } from 'typeorm';
+import { AppConfig } from '../../config/app.config';
 
 @Injectable()
 export class RestarantsService {
@@ -21,6 +23,7 @@ export class RestarantsService {
     private readonly productRepo: Repository<ProductEntity>,
     @InjectRepository(OrganizationProductEntity)
     private readonly organizationProdRepo: Repository<OrganizationProductEntity>,
+    private readonly mainLang: AppConfig
   ) {}
   async findAll(userLat: number, userLng: number) {
     try {
@@ -83,35 +86,54 @@ export class RestarantsService {
     }
   }
 
-  async findProducts(restaurantId: string, lang: 'uz' | 'ru' | 'en' = 'uz') {
-    const products = await this.productRepo.find({
-      where: { restaurant: { id: restaurantId } },
-      relations: ['organizationProduct', 'prices', 'weighs'],
-    });
 
-    return products
-      .filter((p) => p.organizationProduct)
-      .map((p) => {
-        const op = p.organizationProduct;
-        const title =
-          op.title && typeof op.title === 'object'
-            ? (op.title[lang] ?? op.title.uz ?? Object.values(op.title)[0])
-            : op.title;
-        const description =
-          op.description && typeof op.description === 'object'
-            ? (op.description[lang] ??
-              op.description.uz ??
-              Object.values(op.description)[0])
-            : op.description;
+async findProducts(
+  restaurantId: string,
+  title?: string,
+  lang?: 'uz' | 'ru' | 'en',
+) {
+  // lang berilmasa asosiy tilni ishlatamiz
+  const searchLang = lang || this.mainLang;
 
-        return {
-          id: op.id,
-          title,
-          description,
-          image: op.image,
-          price: p.prices?.[0]?.price ?? null,
-          weigh: p.weighs?.[0]?.weigh ?? null,
-        };
-      });
+  const qb = this.productRepo
+    .createQueryBuilder('product')
+    .leftJoin('product.organizationProduct', 'organizationProduct')
+    .leftJoin('product.prices', 'prices')
+    .leftJoin('product.weighs', 'weighs')
+    .leftJoin('product.restaurant', 'restaurant')
+    .where('restaurant.id = :restaurantId', { restaurantId })
+    .andWhere('product.deleted_at IS NULL')
+    .andWhere('organizationProduct.deleted_at IS NULL')
+    .select([
+      'product.id AS product_id',
+      'product.isAvailable AS product_isAvailable',
+      'organizationProduct.id AS orgProduct_id',
+      `organizationProduct.title ->> :lang AS orgProduct_title`,
+      `organizationProduct.description ->> :lang AS orgProduct_description`,
+      'organizationProduct.image AS orgProduct_image',
+      'prices.current_price AS price',
+      'weighs.weigh AS weigh',
+      
+    ])
+    .setParameter('lang', searchLang);
+
+  if (title) {
+    qb.andWhere(
+      `LOWER(organizationProduct.title ->> :lang) LIKE LOWER(:title)`,
+      { lang: searchLang, title: `%${title}%` },
+    );
   }
+
+  const rawProducts = await qb.getRawMany();
+ 
+  
+  if (!rawProducts) {
+    throw new NotFoundException(
+      'Mahsulotlar topilmadi yoki restoran mavjud emas',
+    );
+  }
+
+  return rawProducts
+}
+
 }

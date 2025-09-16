@@ -19,8 +19,6 @@ import { BannerEntity } from './banner.entity';
 export class ProductEntity {
   @PrimaryGeneratedColumn('uuid')
   id: string;
-
-  
   
   @Column()
   isAvailable: boolean;
