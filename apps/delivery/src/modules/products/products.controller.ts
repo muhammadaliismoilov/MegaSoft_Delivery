@@ -1,24 +1,19 @@
 import {
   Controller,
   Get,
-  Param,
-  ParseUUIDPipe,
   Query,
   HttpCode,
   HttpStatus,
-  Post,
-  Body,
 } from '@nestjs/common';
 import { ProductsService } from './products.service';
 import {
   ApiTags,
   ApiOperation,
   ApiResponse,
-  ApiParam,
   ApiQuery,
-  ApiBody,
 } from '@nestjs/swagger';
 import { ProductResponseDto } from './product.dto';
+import { plainToInstance } from 'class-transformer';
 
 @ApiTags('Products')
 @Controller('products')
@@ -49,6 +44,9 @@ export class ProductsController {
     @Query('title') query: string,
     @Query('lang') lang: 'uz' | 'ru' | 'en' = 'uz',
   ) {
-    return this.productsService.searchProducts(query, lang);
+    const prod = await this.productsService.searchProducts(query, lang);
+    return prod;
+    // return plainToInstance(
+    //   ProductResponseDto, prod)
   }
 }

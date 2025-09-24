@@ -10,7 +10,7 @@ import { DataSource, Repository } from 'typeorm';
 import { RestaurantCreateDto, RestaurantUpdateDto } from './restaurant.dto';
 import * as fs from 'fs';
 import * as path from 'path';
-import { OrganizationEntity, WorkDaysEntity } from '@delivery/db/db';
+import { OrganizationEntity, WorkDaysEntity, WorkerEntity } from '@delivery/db/db';
 import { id } from 'date-fns/locale';
 
 @Injectable()
@@ -22,6 +22,8 @@ export class RestaurantsService {
     private readonly organizationRepo: Repository<OrganizationEntity>,
     @InjectRepository(WorkDaysEntity)
     private readonly workDayRepo: Repository<WorkDaysEntity>,
+      @InjectRepository(WorkerEntity)
+    private readonly workersRepo: Repository<WorkerEntity>,
     private readonly dataSource: DataSource,
   ) {}
 
@@ -30,7 +32,9 @@ export class RestaurantsService {
   }
 
   async getOne(restaurantId: string) {
-    const restaurant = await this.restaurantRepo.find({where:{id:restaurantId}});
+    const restaurant = await this.restaurantRepo.find({
+      where: { id: restaurantId },
+    });
     if (!restaurant) {
       throw new NotFoundException(
         `Restaurant with id: ${restaurantId} not found`,
@@ -39,32 +43,33 @@ export class RestaurantsService {
     return restaurant;
   }
 
-  // async createRestaurant(dto: RestaurantCreateDto) {
-  //   try {
-  //     const organization = await this.organizationRepo.findOneBy({
-  //       id: dto.organizationId,
-  //     });
-  //     if (!organization) {
-  //       throw new NotFoundException('Tashkilot topilmadi');
-  //     }
+  async workers(restaurantId: string) {
+    try {
+      const workers = await this.workersRepo.createQueryBuilder('worker')
+      .innerJoin('worker.restaurantId', 'restaurant') // ✅ endi to‘g‘ri
+      .where('worker.restaurant_id = :restaurantId', { restaurantId })
+      .select([
+        'worker.id as id',
+        'worker.fullName as name',
+        'worker.phone as phone',
+        'worker.role as role',
+        'worker.createdAt as createdAt',
+        'worker.updatedAt as updatedAt',
+        'restaurant.id', // faqat restoran ID
+      ])
+       const entities = await workers.getRawMany();
 
-  //     // Agar DTO’da image bo‘lsa, relative path sifatida saqlaymiz
-  //     if (dto.image && dto.image.startsWith('/')) {
-  //       dto.image = dto.image.substring(1); // masalan: /uploads/x.png → uploads/x.png
-  //     }
-  //     console.log(dto);
+       console.log("fsdsdsdhfgh",entities);
+       return entities
+       
+    } catch (error) {
+      throw new InternalServerErrorException(
+        'Ischilar malumotini olishda serverda xatolik yuz berdi',
+        error.message,
+      );
+    }
+  }
 
-  //     const newRestaurant = this.restaurantRepo.create(
-  //       dto,
-
-  //     );
-  //     return await this.restaurantRepo.save(newRestaurant);
-  //   } catch (error) {
-  //     throw new InternalServerErrorException(
-  //       `Restoran yaratishda xatolik yuz berdi: ${error.message}`,
-  //     );
-  //   }
-  // }
   async create(dto: RestaurantCreateDto) {
     try {
       return await this.dataSource.transaction(async (manager) => {

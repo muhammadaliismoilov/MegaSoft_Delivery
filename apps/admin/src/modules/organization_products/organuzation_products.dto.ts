@@ -6,8 +6,6 @@ import {
   IsString,
   IsUUID,
   IsObject,
-  MaxLength,
-  Length,
   IsJSON,
 } from 'class-validator';
 

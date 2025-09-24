@@ -3,11 +3,11 @@ import { RestaurantsService } from './restaurants.service';
 import { RestaurantsController } from './restaurants.controller';
 import { TypeOrmModule } from '@nestjs/typeorm';
 import { RestaurantEntity } from '@delivery/db/db/entities/restaurants.entity';
-import { OrganizationEntity, ProductEntity, WorkDaysEntity } from '@delivery/db/db';
+import { OrganizationEntity, ProductEntity, WorkDaysEntity, WorkerEntity } from '@delivery/db/db';
 
 
 @Module({
-  imports: [TypeOrmModule.forFeature([RestaurantEntity,OrganizationEntity,WorkDaysEntity,ProductEntity])],
+  imports: [TypeOrmModule.forFeature([RestaurantEntity,OrganizationEntity,WorkDaysEntity,ProductEntity,WorkerEntity])],
   controllers: [RestaurantsController],
   providers: [RestaurantsService],
 })

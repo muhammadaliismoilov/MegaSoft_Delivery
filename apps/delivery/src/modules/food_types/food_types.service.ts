@@ -11,6 +11,8 @@ export class FoodTypesService {
     private readonly foodTypesRepo: Repository<FoodTypesEntity>,
   ){}
 
+  async 
+
 
   async findAll() {
     return this.foodTypesRepo.find();

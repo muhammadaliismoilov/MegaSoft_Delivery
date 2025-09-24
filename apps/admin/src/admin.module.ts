@@ -13,6 +13,7 @@ import { OrganizationModule } from './modules/organizations/organizations.module
 import { OrganizationProductsModule } from './modules/organization_products/organization_products.module';
 import { PricesModule } from './modules/prices/prices.module';
 import { WeighsModule } from './modules/weighs/weighs.module';
+import { WorkersModule } from './modules/workers/workers.module';
 
 @Module({
   imports: [
@@ -44,9 +45,11 @@ import { WeighsModule } from './modules/weighs/weighs.module';
     BannerModule,
     OrganizationProductsModule,
     ProductModule,
+    WorkersModule,
     PricesModule,
     WeighsModule,
     WorkDaysModule,
+    
 
 
 

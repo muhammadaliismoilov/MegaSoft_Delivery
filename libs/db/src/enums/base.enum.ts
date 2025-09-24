@@ -6,8 +6,10 @@ export enum DiscountEnum {
 export enum RoleEnum {
   Chef = "chef",
   Operator = "operator",
+  Courier = "courier",
   User = 'user',
   Admin = 'admin',
+  Manager = 'manager',
   SuperAdmin = 'superadmin',
 }
 

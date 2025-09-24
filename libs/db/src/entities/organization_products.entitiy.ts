@@ -19,7 +19,7 @@ export class OrganizationProductEntity {
   id: string;
 
   @ManyToOne(() => FoodTypesEntity, { nullable: true })
-  @JoinColumn({ name: 'food_id' })
+  @JoinColumn({ name: 'food_type_id' })
   food_type_id: FoodTypesEntity;
 
   @ManyToOne(() => OrganizationEntity, (organization) => organization.id, {
